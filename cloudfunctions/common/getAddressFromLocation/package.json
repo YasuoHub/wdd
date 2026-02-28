@@ -1,0 +1,10 @@
+{
+  "name": "common_getAddressFromLocation",
+  "version": "1.0.0",
+  "description": "根据坐标获取地址信息",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest",
+    "axios": "^1.6.0"
+  }
+}
