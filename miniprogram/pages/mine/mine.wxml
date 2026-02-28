@@ -1,0 +1,105 @@
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 背景 -->
+  <view class="bg-blue">
+    <view class="cloud cloud-1"></view>
+    <view class="cloud cloud-2"></view>
+    <view class="cloud cloud-3"></view>
+  </view>
+  
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-header">
+      <image class="user-avatar" src="{{(userInfo && userInfo.avatarUrl) || '/static/images/default-avatar.png'}}" mode="aspectFill"/>
+      <view class="user-info">
+        <view class="user-name">{{(userInfo && userInfo.nickname) || '游客'}}</view>
+        <view class="user-role" wx:if="{{userInfo && userInfo.isVerified}}">
+          <text class="verified-tag">✓ 已认证</text>
+        </view>
+      </view>
+      <view class="edit-btn" bindtap="completeProfile">
+        <text class="edit-icon">✏️</text>
+      </view>
+    </view>
+    
+    <!-- 积分和统计 -->
+    <view class="stats-row">
+      <view class="stat-item" bindtap="navigateTo" data-path="/pages/points/index/index">
+        <view class="stat-value points">{{(userInfo && userInfo.points && userInfo.points.balance) || 0}}</view>
+        <view class="stat-label">我的积分</view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <view class="stat-value">{{(userInfo && userInfo.needCount) || 0}}</view>
+        <view class="stat-label">发布需求</view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <view class="stat-value">{{(userInfo && userInfo.helpCount) || 0}}</view>
+        <view class="stat-label">帮助次数</view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 主菜单 -->
+  <view class="menu-section">
+    <view class="section-title">我的服务</view>
+    <view class="menu-list">
+      <view 
+        class="menu-item" 
+        wx:for="{{menuList}}" 
+        wx:key="title"
+        bindtap="navigateTo"
+        data-path="{{item.path}}"
+      >
+        <view class="menu-left">
+          <text class="menu-icon">{{item.icon}}</text>
+          <text class="menu-title">{{item.title}}</text>
+        </view>
+        <view class="menu-arrow">›</view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 设置菜单 -->
+  <view class="menu-section">
+    <view class="section-title">设置</view>
+    <view class="menu-list">
+      <view 
+        class="menu-item" 
+        wx:for="{{settingList}}" 
+        wx:key="title"
+        bindtap="{{item.type === 'about' ? 'showAbout' : ''}}"
+        data-key="{{item.key}}"
+      >
+        <view class="menu-left">
+          <text class="menu-icon">{{item.icon}}</text>
+          <text class="menu-title">{{item.title}}</text>
+        </view>
+        <view class="menu-right">
+          <!-- Switch类型 -->
+          <switch 
+            wx:if="{{item.type === 'switch'}}"
+            class="menu-switch"
+            checked="{{isLargeFont}}"
+            bindchange="toggleSetting"
+            data-key="{{item.key}}"
+            color="#0EA5E9"
+          />
+          <!-- 普通箭头 -->
+          <text wx:else class="menu-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 退出登录 -->
+  <view class="logout-section" wx:if="{{userInfo}}">
+    <button class="logout-btn" bindtap="logout">
+      <text class="btn-icon">🚪</text>
+      <text>退出登录</text>
+    </button>
+  </view>
+  
+  <!-- 版本信息 -->
+  <view class="version-info">问当地 v1.0.0</view>
+</view>

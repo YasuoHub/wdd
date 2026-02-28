@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "求助中心",
+  "usingComponents": {},
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "backgroundColor": "#F0F9FF"
+}

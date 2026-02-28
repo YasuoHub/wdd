@@ -1,0 +1,104 @@
+<!--pages/points/invite/invite.wxml-->
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 背景 -->
+  <view class="bg-blue">
+    <view class="cloud cloud-1"></view>
+    <view class="cloud cloud-2"></view>
+    <view class="cloud cloud-3"></view>
+  </view>
+
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="header-title">邀请好友</text>
+    <text class="header-desc">邀请好友加入，双方各得50积分</text>
+  </view>
+
+  <!-- 邀请码卡片 -->
+  <view class="invite-code-card">
+    <view class="code-label">我的邀请码</view>
+    <view class="code-value" bindtap="copyInviteCode">
+      <text class="code-number">{{inviteCode}}</text>
+    </view>
+    <view class="code-tip">点击复制邀请码</view>
+  </view>
+
+  <!-- 分享按钮 -->
+  <button class="share-btn" open-type="share">
+    <text class="btn-icon">🤝</text>
+    <text>邀请好友</text>
+  </button>
+
+  <!-- 奖励说明 -->
+  <view class="reward-section">
+    <view class="section-title">奖励说明</view>
+    <view class="reward-list">
+      <view class="reward-item">
+        <text class="reward-icon">🎁</text>
+        <view class="reward-content">
+          <text class="reward-title">邀请奖励</text>
+          <text class="reward-desc">每成功邀请1位好友，获得50积分</text>
+        </view>
+      </view>
+      <view class="reward-item">
+        <text class="reward-icon">🎉</text>
+        <view class="reward-content">
+          <text class="reward-title">好友奖励</text>
+          <text class="reward-desc">好友也可获得50积分新手礼包</text>
+        </view>
+      </view>
+      <view class="reward-item">
+        <text class="reward-icon">📅</text>
+        <view class="reward-content">
+          <text class="reward-title">每月上限</text>
+          <text class="reward-desc">每月最多可邀请20位好友</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 统计卡片 -->
+  <view class="stats-card">
+    <view class="stat-item">
+      <text class="stat-value">{{totalCount}}</text>
+      <text class="stat-label">累计邀请</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">{{monthlyCount}}/{{monthlyLimit}}</text>
+      <text class="stat-label">本月邀请</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-value highlight">+{{totalReward}}</text>
+      <text class="stat-label">累计奖励</text>
+    </view>
+  </view>
+
+  <!-- 邀请记录 -->
+  <view class="records-section">
+    <view class="section-title">邀请记录</view>
+    <view class="records-list" wx:if="{{inviteList.length > 0}}">
+      <view class="record-item" wx:for="{{inviteList}}" wx:key="_id">
+        <view class="record-avatar">
+          <text class="avatar-text">{{item.invitedNickname ? item.invitedNickname[0] : '?'}}</text>
+        </view>
+        <view class="record-info">
+          <text class="record-name">{{item.invitedNickname || '未知用户'}}</text>
+          <text class="record-time">{{item.formattedTime}}</text>
+        </view>
+        <view class="record-reward">+{{item.pointsReward || 50}}</view>
+      </view>
+    </view>
+    <view class="empty-state" wx:if="{{!loading && inviteList.length === 0}}">
+      <text class="empty-icon">🎈</text>
+      <text class="empty-text">还没有邀请记录</text>
+      <text class="empty-desc">快去邀请好友，一起赚积分吧！</text>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text>加载中...</text>
+  </view>
+</view>

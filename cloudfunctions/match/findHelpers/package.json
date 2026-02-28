@@ -1,0 +1,9 @@
+{
+  "name": "match_findHelpers",
+  "version": "1.0.0",
+  "description": "寻找匹配的帮助者",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

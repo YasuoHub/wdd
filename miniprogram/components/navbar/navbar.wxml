@@ -1,0 +1,25 @@
+<!--components/navbar/navbar.wxml-->
+<view class="navbar-wrapper" style="background-color: {{backgroundColor}}; padding-top: {{statusBarHeight}}px;">
+  <view class="navbar" style="height: 44px;">
+    <!-- 左侧按钮区域 -->
+    <view class="navbar-left">
+      <view wx:if="{{showBack}}" class="nav-btn" bindtap="goBack">
+        <text class="nav-icon">←</text>
+      </view>
+      <view wx:if="{{showHome}}" class="nav-btn" bindtap="goHome">
+        <text class="nav-icon">⌂</text>
+      </view>
+    </view>
+    
+    <!-- 标题 -->
+    <view class="navbar-title" style="color: {{color}};">
+      <text>{{title}}</text>
+    </view>
+    
+    <!-- 右侧占位 -->
+    <view class="navbar-right"></view>
+  </view>
+</view>
+
+<!-- 占位块，防止内容被导航栏遮挡 -->
+<view style="height: {{navBarHeight}}px;"></view>

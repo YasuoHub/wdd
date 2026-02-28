@@ -1,0 +1,163 @@
+<!--pages/helper/profile/profile.wxml-->
+<wxs module="utils">
+  module.exports = {
+    includes: function(arr, item) {
+      if (!arr || !arr.length) return false
+      return arr.indexOf(item) > -1
+    }
+  }
+</wxs>
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 背景 -->
+  <view class="bg-blue">
+    <view class="cloud cloud-1"></view>
+    <view class="cloud cloud-2"></view>
+    <view class="cloud cloud-3"></view>
+  </view>
+  
+  <!-- 加载中 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+  
+  <!-- 主内容 -->
+  <block wx:if="{{!loading}}">
+    <!-- 页面标题 -->
+    <view class="page-header">
+      <text class="header-title">{{isEdit ? '编辑服务资料' : '完善服务资料'}}</text>
+      <text class="header-desc">设置您的服务类型和区域，开始帮助他人</text>
+    </view>
+    
+    <!-- 帮助类型选择 -->
+    <view class="section-card">
+      <view class="section-header">
+        <text class="section-icon">🎯</text>
+        <text class="section-title">选择帮助类型</text>
+        <text class="section-required">*</text>
+      </view>
+      <text class="section-desc">选择您能提供帮助的服务类型（可多选）</text>
+      
+      <view class="type-grid">
+        <view
+          class="type-item {{utils.includes(form.helpTypes, item.key) ? 'selected' : ''}}"
+          wx:for="{{helpTypeOptions}}"
+          wx:key="key"
+          bindtap="toggleHelpType"
+          data-key="{{item.key}}"
+        >
+          <text class="type-icon">{{item.icon}}</text>
+          <text class="type-name">{{item.name}}</text>
+          <view class="check-mark" wx:if="{{utils.includes(form.helpTypes, item.key)}}">✓</view>
+        </view>
+      </view>
+      
+      <view class="selected-count" wx:if="{{form.helpTypes.length > 0}}">
+        已选择 {{form.helpTypes.length}} 项
+      </view>
+    </view>
+    
+    <!-- 服务位置设置 -->
+    <view class="section-card">
+      <view class="section-header">
+        <text class="section-icon">📍</text>
+        <text class="section-title">设置服务位置</text>
+        <text class="section-required">*</text>
+      </view>
+      <text class="section-desc">添加您能提供服务的地理位置和服务范围</text>
+      
+      <!-- 位置列表 -->
+      <view class="location-list" wx:if="{{form.locations.length > 0}}">
+        <view class="location-item" wx:for="{{form.locations}}" wx:key="index">
+          <view class="location-info">
+            <text class="location-name">{{item.name}}</text>
+            <text class="location-address">{{item.address}}</text>
+            <text class="location-radius">服务范围：{{item.radiusText}}</text>
+          </view>
+          <view class="location-actions">
+            <text class="action-btn edit" bindtap="editLocation" data-index="{{index}}">编辑</text>
+            <text class="action-btn delete" bindtap="deleteLocation" data-index="{{index}}">删除</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 添加位置按钮 -->
+      <view class="add-location-btn" bindtap="addLocation" wx:if="{{form.locations.length < 3}}">
+        <text class="add-icon">+</text>
+        <text class="add-text">添加服务地点（{{form.locations.length}}/3）</text>
+      </view>
+      <view class="location-limit-tip" wx:else>
+        <text class="tip-icon">✓</text>
+        <text class="tip-text">已设置3个服务地点（达到上限）</text>
+      </view>
+    </view>
+    
+    <!-- 提示信息 -->
+    <view class="tips-section">
+      <view class="tip-item">
+        <text class="tip-icon">💡</text>
+        <text class="tip-text">您可以在多个位置提供服务</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-icon">🔔</text>
+        <text class="tip-text">当有匹配的需求时，您会收到通知</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-icon">💰</text>
+        <text class="tip-text">完成任务可获得悬赏积分</text>
+      </view>
+    </view>
+    
+    <!-- 提交按钮 -->
+    <view class="submit-section">
+      <button class="submit-btn" bindtap="submitForm">
+        <text class="btn-icon">✓</text>
+        <text>{{isEdit ? '保存修改' : '保存资料'}}</text>
+      </button>
+    </view>
+  </block>
+  
+  <!-- 位置编辑弹窗 -->
+  <view class="modal-mask" wx:if="{{showLocationModal}}" bindtap="closeLocationModal"></view>
+  <view class="location-modal" wx:if="{{showLocationModal}}">
+    <view class="modal-header">
+      <text class="modal-title">设置服务范围</text>
+      <text class="modal-close" bindtap="closeLocationModal">×</text>
+    </view>
+    
+    <view class="modal-body" wx:if="{{editingLocation}}">
+      <view class="location-preview">
+        <text class="preview-name">{{editingLocation.name}}</text>
+        <text class="preview-address">{{editingLocation.address}}</text>
+      </view>
+      
+      <view class="radius-section">
+        <text class="radius-label">服务范围</text>
+        <view class="radius-value">
+          <text class="radius-number">{{editingLocation.radiusText}}</text>
+          <text class="radius-unit"></text>
+        </view>
+        <slider 
+          class="radius-slider"
+          min="1000" 
+          max="20000" 
+          step="1000"
+          value="{{editingLocation.radius}}"
+          bindchange="onRadiusChange"
+          activeColor="#0EA5E9"
+          block-color="#0EA5E9"
+        />
+        <view class="slider-labels">
+          <text>1公里</text>
+          <text>10公里</text>
+          <text>20公里</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="modal-footer">
+      <button class="modal-btn cancel" bindtap="closeLocationModal">取消</button>
+      <button class="modal-btn confirm" bindtap="saveLocation">确定</button>
+    </view>
+  </view>
+</view>

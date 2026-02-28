@@ -1,0 +1,101 @@
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 背景 -->
+  <view class="bg-blue">
+    <view class="cloud cloud-1"></view>
+    <view class="cloud cloud-2"></view>
+    <view class="cloud cloud-3"></view>
+  </view>
+
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="header-title">我的需求</text>
+  </view>
+
+  <!-- 筛选标签 -->
+  <view class="filter-bar">
+    <view
+      class="filter-item {{currentFilter === item.key ? 'active' : ''}}"
+      wx:for="{{filters}}"
+      wx:key="key"
+      bindtap="switchFilter"
+      data-key="{{item.key}}"
+    >
+      {{item.name}}
+    </view>
+  </view>
+
+  <!-- 需求列表 -->
+  <view class="needs-list">
+    <view
+      class="need-item"
+      wx:for="{{needs}}"
+      wx:key="_id"
+      bindtap="viewNeedDetail"
+      data-id="{{item._id}}"
+    >
+      <!-- 状态标签 -->
+      <view class="status-tag {{getStatusClass(item.status)}}">
+        {{item.statusText}}
+      </view>
+
+      <!-- 需求内容 -->
+      <view class="need-content">
+        <view class="need-header">
+          <text class="need-type">{{getTypeIcon(item.type)}} {{item.typeName}}</text>
+          <text class="need-points">{{item.points}}积分</text>
+        </view>
+
+        <view class="need-location">
+          <text class="location-icon">📍</text>
+          <text class="location-name">{{item.location.name}}</text>
+        </view>
+
+        <view class="need-footer">
+          <text class="need-no">编号: {{item.needNo}}</text>
+          <text class="need-time">{{item.formattedTime}}</text>
+        </view>
+
+        <!-- 帮助者信息 -->
+        <view class="helper-info" wx:if="{{item.helperInfo}}">
+          <text class="helper-label">帮助者:</text>
+          <text class="helper-name">{{item.helperInfo.nickname}}</text>
+        </view>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="need-actions" catchtap="stopPropagation">
+        <text
+          class="action-btn cancel"
+          wx:if="{{item.status === 'matching' || item.status === 'executing'}}"
+          bindtap="cancelNeed"
+          data-id="{{item._id}}"
+        >取消</text>
+        <text class="action-btn view" bindtap="viewNeedDetail" data-id="{{item._id}}">查看</text>
+      </view>
+    </view>
+
+    <!-- 加载中 -->
+    <view class="loading-more" wx:if="{{loading && needs.length > 0}}">
+      <view class="loading-spinner"></view>
+      <text>加载中...</text>
+    </view>
+
+    <!-- 没有更多 -->
+    <view class="no-more" wx:if="{{!hasMore && needs.length > 0}}">
+      <text>—— 没有更多了 ——</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && needs.length === 0}}">
+      <text class="empty-icon">📭</text>
+      <text class="empty-text">暂无需求记录</text>
+      <text class="empty-desc">点击下方按钮发布您的第一个需求</text>
+      <button class="publish-btn" bindtap="goToPublish">发布需求</button>
+    </view>
+  </view>
+
+  <!-- 底部发布按钮 -->
+  <view class="bottom-bar" wx:if="{{needs.length > 0}}">
+    <button class="publish-btn" bindtap="goToPublish">+ 发布新需求</button>
+  </view>
+</view>

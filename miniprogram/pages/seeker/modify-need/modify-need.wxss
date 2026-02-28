@@ -1,0 +1,5 @@
+/**miniprogram/pages/seeker/modify-need/modify-need.wxss**/
+/* 修改需求样式 */
+.container {
+  padding: 20rpx;
+}

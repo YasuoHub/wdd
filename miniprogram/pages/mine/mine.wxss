@@ -1,0 +1,270 @@
+/* pages/mine/mine.wxss */
+
+page {
+  background-color: #F0F9FF;
+  min-height: 100vh;
+}
+
+.container {
+  padding: 30rpx;
+  padding-bottom: 60rpx;
+}
+
+/* 背景 */
+.bg-blue {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 350rpx;
+  background: linear-gradient(180deg, #0EA5E9 0%, #38BDF8 60%, #F0F9FF 100%);
+  z-index: -1;
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+}
+
+.cloud-1 {
+  width: 120rpx;
+  height: 60rpx;
+  top: 60rpx;
+  left: 10%;
+  animation: float 8s ease-in-out infinite;
+}
+
+.cloud-2 {
+  width: 180rpx;
+  height: 90rpx;
+  top: 30rpx;
+  right: 15%;
+  animation: float 10s ease-in-out infinite 2s;
+}
+
+.cloud-3 {
+  width: 100rpx;
+  height: 50rpx;
+  top: 120rpx;
+  left: 60%;
+  animation: float 7s ease-in-out infinite 1s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0rpx); }
+  50% { transform: translateY(-15rpx); }
+}
+
+/* 用户卡片 */
+.user-card {
+  background: #fff;
+  border-radius: 32rpx;
+  padding: 40rpx 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 8rpx 30rpx rgba(14, 165, 233, 0.12);
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 40rpx;
+}
+
+.user-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(14, 165, 233, 0.2);
+  margin-right: 24rpx;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1F2937;
+  margin-bottom: 12rpx;
+}
+
+.user-role {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.verified-tag {
+  font-size: 22rpx;
+  color: #10B981;
+  background: #ECFDF5;
+  padding: 6rpx 12rpx;
+  border-radius: 16rpx;
+}
+
+.edit-btn {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F0F9FF;
+  border-radius: 50%;
+}
+
+.edit-icon {
+  font-size: 28rpx;
+}
+
+/* 统计行 */
+.stats-row {
+  display: flex;
+  align-items: center;
+  padding-top: 30rpx;
+  border-top: 1rpx solid #F0F0F0;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #1F2937;
+  margin-bottom: 8rpx;
+}
+
+.stat-value.points {
+  color: #0EA5E9;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #6B7280;
+}
+
+.stat-divider {
+  width: 2rpx;
+  height: 60rpx;
+  background: #E5E7EB;
+}
+
+/* 菜单区域 */
+.menu-section {
+  margin-bottom: 30rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  color: #6B7280;
+  margin-bottom: 16rpx;
+  padding-left: 10rpx;
+}
+
+.menu-list {
+  background: #fff;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 20rpx rgba(14, 165, 233, 0.08);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:active {
+  background: #F9FAFB;
+}
+
+.menu-left {
+  display: flex;
+  align-items: center;
+}
+
+.menu-icon {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+}
+
+.menu-title {
+  font-size: 30rpx;
+  color: #374151;
+}
+
+.menu-right {
+  display: flex;
+  align-items: center;
+}
+
+.menu-switch {
+  transform: scale(0.9);
+}
+
+.menu-arrow {
+  font-size: 36rpx;
+  color: #9CA3AF;
+  margin-left: 8rpx;
+}
+
+/* 退出登录 */
+.logout-section {
+  margin-top: 40rpx;
+  margin-bottom: 30rpx;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 28rpx 0;
+  background: #fff;
+  color: #EF4444;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  margin: 0;
+  box-shadow: 0 4rpx 20rpx rgba(239, 68, 68, 0.1);
+}
+
+.logout-btn::after {
+  border: none;
+}
+
+.btn-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+/* 版本信息 */
+.version-info {
+  text-align: center;
+  font-size: 24rpx;
+  color: #9CA3AF;
+  padding-bottom: 40rpx;
+}
+
+/* 大字体模式 */
+.large-font .user-name {
+  font-size: 40rpx;
+}
+
+.large-font .stat-value {
+  font-size: 44rpx;
+}
+
+.large-font .menu-title {
+  font-size: 34rpx;
+}

@@ -1,0 +1,9 @@
+{
+  "name": "need_modifyNeed",
+  "version": "1.0.0",
+  "description": "修改需求",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

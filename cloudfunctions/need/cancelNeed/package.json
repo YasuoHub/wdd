@@ -1,0 +1,9 @@
+{
+  "name": "need_cancelNeed",
+  "version": "1.0.0",
+  "description": "取消需求",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

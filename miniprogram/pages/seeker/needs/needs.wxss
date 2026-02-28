@@ -1,0 +1,352 @@
+/**miniprogram/pages/seeker/needs/needs.wxss**/
+/* 我的需求样式 */
+
+page {
+  background-color: #F0F9FF;
+  min-height: 100vh;
+}
+
+.container {
+  padding: 30rpx;
+  padding-bottom: 140rpx;
+}
+
+/* 背景 */
+.bg-blue {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300rpx;
+  background: linear-gradient(180deg, #0EA5E9 0%, #38BDF8 60%, #F0F9FF 100%);
+  z-index: -1;
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+}
+
+.cloud-1 {
+  width: 120rpx;
+  height: 60rpx;
+  top: 60rpx;
+  left: 10%;
+}
+
+.cloud-2 {
+  width: 180rpx;
+  height: 90rpx;
+  top: 30rpx;
+  right: 15%;
+}
+
+.cloud-3 {
+  width: 100rpx;
+  height: 50rpx;
+  top: 120rpx;
+  left: 60%;
+}
+
+/* 页面标题 */
+.page-header {
+  padding-top: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.header-title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 筛选栏 */
+.filter-bar {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+  overflow-x: auto;
+}
+
+.filter-item {
+  padding: 12rpx 28rpx;
+  background: #fff;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+  color: #6B7280;
+  box-shadow: 0 2rpx 10rpx rgba(14, 165, 233, 0.05);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.filter-item.active {
+  background: #0EA5E9;
+  color: #fff;
+}
+
+/* 需求列表 */
+.needs-list {
+  padding-bottom: 40rpx;
+}
+
+.need-item {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(14, 165, 233, 0.08);
+  position: relative;
+}
+
+/* 状态标签 */
+.status-tag {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.status-pending {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.status-matching {
+  background: #DBEAFE;
+  color: #1E40AF;
+}
+
+.status-executing {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.status-completed {
+  background: #E5E7EB;
+  color: #374151;
+}
+
+.status-cancelled {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.status-disputed {
+  background: #FCE7F3;
+  color: #9D174D;
+}
+
+/* 需求内容 */
+.need-content {
+  padding-top: 40rpx;
+}
+
+.need-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.need-type {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.need-points {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #0EA5E9;
+}
+
+.need-location {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.location-icon {
+  font-size: 24rpx;
+  margin-right: 8rpx;
+}
+
+.location-name {
+  font-size: 28rpx;
+  color: #6B7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.need-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.need-no {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+.need-time {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+/* 帮助者信息 */
+.helper-info {
+  display: flex;
+  align-items: center;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #F0F0F0;
+}
+
+.helper-label {
+  font-size: 26rpx;
+  color: #6B7280;
+  margin-right: 8rpx;
+}
+
+.helper-name {
+  font-size: 26rpx;
+  color: #1F2937;
+  font-weight: 500;
+}
+
+/* 操作按钮 */
+.need-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.action-btn {
+  padding: 12rpx 28rpx;
+  border-radius: 28rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.action-btn.cancel {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.action-btn.view {
+  background: #0EA5E9;
+  color: #fff;
+}
+
+/* 加载更多 */
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx 0;
+  font-size: 26rpx;
+  color: #6B7280;
+}
+
+.loading-spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid #E5E7EB;
+  border-top-color: #0EA5E9;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 12rpx;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 没有更多 */
+.no-more {
+  text-align: center;
+  padding: 30rpx 0;
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 100rpx 0;
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #6B7280;
+  margin-bottom: 12rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #9CA3AF;
+  margin-bottom: 40rpx;
+}
+
+/* 发布按钮 */
+.publish-btn {
+  background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%);
+  color: #fff;
+  padding: 28rpx 60rpx;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 20rpx rgba(14, 165, 233, 0.3);
+}
+
+.publish-btn::after {
+  border: none;
+}
+
+/* 底部发布栏 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 30rpx;
+  background: #fff;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.bottom-bar .publish-btn {
+  width: 100%;
+  padding: 28rpx 0;
+}
+
+/* 大字体模式 */
+.large-font .header-title {
+  font-size: 46rpx;
+}
+
+.large-font .need-type {
+  font-size: 36rpx;
+}
+
+.large-font .need-points {
+  font-size: 32rpx;
+}
+
+.large-font .location-name {
+  font-size: 32rpx;
+}

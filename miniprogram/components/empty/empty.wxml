@@ -1,0 +1,23 @@
+<!--components/empty/empty.wxml-->
+<view wx:if="{{show}}" class="empty-wrapper">
+  <view class="empty-content">
+    <!-- 图片或图标 -->
+    <image wx:if="{{image}}" class="empty-image" src="{{image}}" mode="aspectFit"/>
+    <view wx:else class="empty-icon">📭</view>
+    
+    <!-- 标题 -->
+    <text class="empty-title">{{title}}</text>
+    
+    <!-- 描述 -->
+    <text wx:if="{{description}}" class="empty-description">{{description}}</text>
+    
+    <!-- 操作按钮 -->
+    <button 
+      wx:if="{{buttonText}}" 
+      class="empty-button"
+      bindtap="onButtonTap"
+    >
+      {{buttonText}}
+    </button>
+  </view>
+</view>

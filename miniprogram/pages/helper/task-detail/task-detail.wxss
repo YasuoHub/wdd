@@ -1,0 +1,5 @@
+/**miniprogram/pages/helper/task-detail/task-detail.wxss**/
+/* 任务详情样式 */
+.container {
+  padding: 20rpx;
+}

@@ -1,0 +1,7 @@
+{
+  "name": "config",
+  "version": "1.0.0",
+  "description": "全局配置文件",
+  "main": "index.js",
+  "dependencies": {}
+}

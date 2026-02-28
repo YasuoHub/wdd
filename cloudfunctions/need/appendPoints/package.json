@@ -1,0 +1,9 @@
+{
+  "name": "need_appendPoints",
+  "version": "1.0.0",
+  "description": "追加悬赏积分",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

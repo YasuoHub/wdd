@@ -1,0 +1,133 @@
+<!--pages/helper/home/home.wxml-->
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 背景 -->
+  <view class="bg-blue">
+    <view class="cloud cloud-1"></view>
+    <view class="cloud cloud-2"></view>
+    <view class="cloud cloud-3"></view>
+  </view>
+  
+  <!-- 顶部统计卡片 -->
+  <view class="stats-card">
+    <view class="stats-header">
+      <view class="welcome-text">
+        <text class="greeting">👋 你好，</text>
+        <text class="username">{{(userInfo && userInfo.nickname) || '帮助者'}}</text>
+      </view>
+      <view class="location-box" bindtap="chooseLocation">
+        <text class="location-icon">📍</text>
+        <text class="location-text">{{locationName}}</text>
+        <text class="location-arrow">▼</text>
+      </view>
+    </view>
+    
+    <view class="stats-grid">
+      <view class="stat-box" bindtap="goToMyTasks">
+        <text class="stat-num">{{taskStats.ongoing}}</text>
+        <text class="stat-label">进行中</text>
+      </view>
+      <view class="stat-box" bindtap="goToMyTasks">
+        <text class="stat-num">{{taskStats.completed}}</text>
+        <text class="stat-label">已完成</text>
+      </view>
+      <view class="stat-box" bindtap="goToMyTasks">
+        <text class="stat-num">{{taskStats.total}}</text>
+        <text class="stat-label">总计</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 标签切换 -->
+  <view class="tab-section">
+    <view class="tab-list">
+      <view 
+        class="tab-item {{currentTab === item.key ? 'active' : ''}}"
+        wx:for="{{tabs}}"
+        wx:key="key"
+        bindtap="switchTab"
+        data-key="{{item.key}}"
+      >
+        <text class="tab-icon">{{item.icon}}</text>
+        <text class="tab-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 需求列表 -->
+  <view class="need-section">
+    <!-- 加载中 -->
+    <view class="loading-container" wx:if="{{loading && needList.length === 0}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载需求中...</text>
+    </view>
+    
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!loading && needList.length === 0}}">
+      <view class="empty-icon">🔍</view>
+      <text class="empty-title">暂无附近需求</text>
+      <text class="empty-desc">换个位置或稍后再来看看</text>
+    </view>
+    
+    <!-- 需求卡片列表 -->
+    <view class="need-list" wx:if="{{needList.length > 0}}">
+      <view 
+        class="need-card"
+        wx:for="{{needList}}"
+        wx:key="_id"
+        bindtap="viewNeedDetail"
+        data-id="{{item._id}}"
+      >
+        <!-- 卡片头部 -->
+        <view class="card-header">
+          <view class="type-tag">
+            <text class="type-icon">{{item.typeIcon || '📋'}}</text>
+            <text class="type-name">{{item.typeName || '其他'}}</text>
+          </view>
+          <view class="distance-tag">
+            <text class="distance-icon">📍</text>
+            <text class="distance-text">{{item.distanceText || '未知'}}</text>
+          </view>
+        </view>
+        
+        <!-- 描述 -->
+        <view class="card-body">
+          <text class="need-desc">{{item.description || '暂无描述'}}</text>
+        </view>
+        
+        <!-- 卡片底部 -->
+        <view class="card-footer">
+          <view class="footer-left">
+            <view class="time-info">
+              <text class="time-icon">⏰</text>
+              <text class="time-text">剩余 {{item.timeLeft || '未知'}}</text>
+            </view>
+            <view class="publish-time">{{item.formattedTime}}</view>
+          </view>
+          <view class="footer-right">
+            <view class="bounty-box">
+              <text class="bounty-icon">💎</text>
+              <text class="bounty-num">{{item.bounty || 0}}</text>
+            </view>
+            <button 
+              class="accept-btn"
+              catchtap="acceptTask"
+              data-id="{{item._id}}"
+            >
+              接单
+            </button>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 加载更多 -->
+      <view class="load-more" wx:if="{{hasMore}}">
+        <text wx:if="{{loading}}">加载中...</text>
+        <text wx:else>上拉加载更多</text>
+      </view>
+      
+      <view class="no-more" wx:if="{{!hasMore && needList.length > 5}}">
+        <text>没有更多了</text>
+      </view>
+    </view>
+  </view>
+</view>

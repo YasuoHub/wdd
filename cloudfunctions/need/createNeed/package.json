@@ -1,0 +1,9 @@
+{
+  "name": "need_createNeed",
+  "version": "1.0.0",
+  "description": "创建需求并扣除积分",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

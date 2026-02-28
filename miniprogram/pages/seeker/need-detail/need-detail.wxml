@@ -1,0 +1,193 @@
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 背景 -->
+  <view class="bg-blue">
+    <view class="cloud cloud-1"></view>
+    <view class="cloud cloud-2"></view>
+    <view class="cloud cloud-3"></view>
+  </view>
+  
+  <!-- 加载中 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+  
+  <!-- 内容区 -->
+  <block wx:if="{{!loading && needInfo}}">
+    <!-- 状态卡片 -->
+    <view class="status-card">
+      <view class="status-badge {{'status-' + needInfo.status}}">
+        <text class="status-icon">{{needInfo.status === 'matching' ? '🔍' : needInfo.status === 'executing' ? '🚀' : needInfo.status === 'completed' ? '✅' : needInfo.status === 'cancelled' ? '❌' : '⏳'}}</text>
+        <text class="status-text">{{needInfo.statusName || '待匹配'}}</text>
+      </view>
+      <view class="need-no" bindtap="copyNeedNo">
+        <text>编号: {{needInfo.needNo}}</text>
+        <text class="copy-icon">📋</text>
+      </view>
+    </view>
+    
+    <!-- 需求详情卡片 -->
+    <view class="detail-card">
+      <!-- 类型和时间 -->
+      <view class="type-section">
+        <view class="type-tag">
+          <text class="type-icon">{{needInfo.typeIcon || '📋'}}</text>
+          <text class="type-name">{{needInfo.typeName || '其他需求'}}</text>
+        </view>
+        <text class="time-text">{{needInfo.formattedTime}}</text>
+      </view>
+      
+      <!-- 描述 -->
+      <view class="desc-section">
+        <text class="desc-text">{{needInfo.description || '暂无描述'}}</text>
+      </view>
+      
+      <!-- 位置信息 -->
+      <view class="location-section">
+        <text class="section-label">📍 位置信息</text>
+        <view class="location-box">
+          <view class="location-main">{{needInfo.location && needInfo.location.name || '未知位置'}}</view>
+          <view class="location-detail">{{needInfo.location && needInfo.location.address || ''}}</view>
+        </view>
+      </view>
+      
+      <!-- 参考图片 -->
+      <view class="images-section" wx:if="{{needInfo.referenceImages && needInfo.referenceImages.length > 0}}">
+        <text class="section-label">🖼️ 参考图片</text>
+        <view class="image-list">
+          <image 
+            wx:for="{{needInfo.referenceImages}}" 
+            wx:key="index"
+            class="ref-image"
+            src="{{item}}"
+            mode="aspectFill"
+            data-url="{{item}}"
+            bindtap="previewImage"
+          />
+        </view>
+      </view>
+    </view>
+    
+    <!-- 悬赏信息卡片 -->
+    <view class="bounty-card">
+      <view class="bounty-row">
+        <view class="bounty-item">
+          <text class="bounty-label">悬赏积分</text>
+          <view class="bounty-value">
+            <text class="bounty-icon">💎</text>
+            <text class="bounty-number">{{needInfo.bounty || 0}}</text>
+          </view>
+        </view>
+        <view class="divider"></view>
+        <view class="bounty-item" wx:if="{{needInfo.timeLeft}}">
+          <text class="bounty-label">剩余时间</text>
+          <view class="bounty-value">
+            <text class="bounty-icon">⏰</text>
+            <text class="bounty-number time-warning {{needInfo.timeLeft === '已超时' ? 'overdue' : ''}}">{{needInfo.timeLeft}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 帮助者信息 -->
+    <view class="helper-card" wx:if="{{helperInfo}}">
+      <view class="helper-header">
+        <text class="helper-title">🤝 帮助者信息</text>
+        <view class="helper-status" wx:if="{{needInfo.status === 'executing'}}">
+          <view class="status-dot active"></view>
+          <text>进行中</text>
+        </view>
+      </view>
+      <view class="helper-info">
+        <image class="helper-avatar" src="{{helperInfo.avatarUrl || '/static/images/default-avatar.png'}}" mode="aspectFill"/>
+        <view class="helper-detail">
+          <view class="helper-name">{{helperInfo.nickname || '匿名用户'}}</view>
+          <view class="helper-meta">
+            <text class="meta-item">帮助 {{helperInfo.helpCount || 0}} 次</text>
+            <text class="meta-item">好评 {{helperInfo.goodRate || 98}}%</text>
+          </view>
+        </view>
+        <button class="chat-btn" bindtap="goToChat">
+          <text class="btn-icon">💬</text>
+          <text>聊天</text>
+        </button>
+      </view>
+    </view>
+    
+    <!-- 等待匹配提示 -->
+    <view class="waiting-tip" wx:if="{{needInfo.status === 'matching'}}">
+      <view class="tip-icon">🌟</view>
+      <text class="tip-title">正在为您匹配合适的帮助者</text>
+      <text class="tip-desc">平均匹配时间 3-5 分钟，请耐心等待</text>
+    </view>
+    
+    <!-- 操作按钮区 -->
+    <view class="action-section" wx:if="{{showActions}}">
+      <!-- 取消按钮 -->
+      <button 
+        class="action-btn cancel-btn" 
+        wx:if="{{canCancel}}"
+        bindtap="cancelNeed"
+      >
+        <text class="btn-icon">🚫</text>
+        <text>取消需求</text>
+      </button>
+      
+      <!-- 完成按钮 -->
+      <button 
+        class="action-btn complete-btn" 
+        wx:if="{{canComplete}}"
+        bindtap="completeNeed"
+      >
+        <text class="btn-icon">✅</text>
+        <text>确认完成</text>
+      </button>
+      
+      <!-- 评价按钮 -->
+      <button 
+        class="action-btn review-btn" 
+        wx:if="{{canReview}}"
+        bindtap="completeNeed"
+      >
+        <text class="btn-icon">⭐</text>
+        <text>去评价</text>
+      </button>
+      
+      <!-- 客服介入 -->
+      <button 
+        class="action-btn support-btn" 
+        wx:if="{{needInfo.status === 'executing'}}"
+        bindtap="requestSupport"
+      >
+        <text class="btn-icon">🎧</text>
+        <text>申请客服介入</text>
+      </button>
+    </view>
+    
+    <!-- 已完成状态 -->
+    <view class="completed-section" wx:if="{{needInfo.status === 'completed'}}">
+      <view class="completed-icon">🎉</view>
+      <text class="completed-title">任务已完成</text>
+      <text class="completed-desc">积分已结算给帮助者，感谢使用问当地</text>
+    </view>
+    
+    <!-- 底部操作 -->
+    <view class="bottom-actions">
+      <button class="secondary-btn" bindtap="publishAgain">
+        <text class="btn-icon">📝</text>
+        <text>再发一条</text>
+      </button>
+      <button class="secondary-btn home-btn" bindtap="goHome">
+        <text class="btn-icon">🏠</text>
+        <text>返回首页</text>
+      </button>
+    </view>
+  </block>
+  
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{!loading && !needInfo}}">
+    <image class="empty-icon" src="/static/images/empty.png" mode="aspectFit"/>
+    <text class="empty-text">需求不存在或已删除</text>
+    <button class="primary-btn" bindtap="goHome">返回首页</button>
+  </view>
+</view>

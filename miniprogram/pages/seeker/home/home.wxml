@@ -1,0 +1,160 @@
+<!--pages/seeker/home/home.wxml-->
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 顶部蓝色区域 -->
+  <view class="header-section">
+    <view class="cloud cloud-1">☁️</view>
+    <view class="cloud cloud-2">☁️</view>
+    
+    <view class="header-content">
+      <view class="welcome-text">
+        <text class="greeting">你好，{{(userInfo && userInfo.nickname) || '求助者'}} 👋</text>
+        <text class="subtitle">有什么可以帮您的吗？</text>
+      </view>
+      
+      <!-- 快速统计 -->
+      <view class="stats-bar">
+        <view class="stat-item">
+          <text class="stat-value">{{stats.totalRequests}}</text>
+          <text class="stat-label">累计发布</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-value highlight">{{stats.pendingRequests}}</text>
+          <text class="stat-label">进行中</text>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <text class="stat-value">{{stats.completedRequests}}</text>
+          <text class="stat-label">已完成</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 主要内容区域 -->
+  <view class="main-content">
+    <!-- 发布需求大按钮 -->
+    <view class="publish-section">
+      <view class="publish-card" bindtap="goToPublish">
+        <view class="publish-bg"></view>
+        <view class="publish-content">
+          <view class="publish-icon-wrap">
+            <text class="publish-icon">📍</text>
+            <view class="icon-ring"></view>
+          </view>
+          <view class="publish-text">
+            <text class="publish-title {{isLargeFont ? 'font-xl' : 'font-lg'}}">发布新需求</text>
+            <text class="publish-desc {{isLargeFont ? 'font-base' : 'font-sm'}}">快速获取异地实时信息</text>
+          </view>
+          <view class="publish-arrow">
+            <text>→</text>
+          </view>
+        </view>
+        <view class="publish-hint">
+          <text class="hint-text">💡 最低10积分即可发布</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 快速类型选择 -->
+    <view class="quick-types-section">
+      <view class="section-header">
+        <text class="section-title">快速选择类型</text>
+        <text class="section-more" bindtap="goToPublish">更多 →</text>
+      </view>
+      
+      <scroll-view class="types-scroll" scroll-x enhanced show-scrollbar="false">
+        <view class="types-list">
+          <view class="type-item" 
+                wx:for="{{needTypes}}" 
+                wx:key="value"
+                bindtap="quickPublish"
+                data-type="{{item.value}}"
+                data-name="{{item.name}}"
+                data-icon="{{item.icon}}"
+                data-color="{{item.color}}">
+            <view class="type-icon-wrap" style="background: linear-gradient(135deg, {{item.color}}20 0%, {{item.color}}40 100%); border-color: {{item.color}}30;">
+              <text class="type-icon">{{item.icon}}</text>
+            </view>
+            <text class="type-name">{{item.name}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 我的需求列表 -->
+    <view class="needs-section">
+      <view class="section-header">
+        <view class="header-left">
+          <text class="section-icon">📋</text>
+          <text class="section-title">我的需求</text>
+        </view>
+        <text class="view-all" bindtap="goToPublish" wx:if="{{needs.length === 0}}">去发布 →</text>
+      </view>
+
+      <!-- 需求列表 -->
+      <view class="needs-list" wx:if="{{needs.length > 0}}">
+        <view class="need-card {{item.showAnimation ? 'show' : ''}}" 
+              wx:for="{{needs}}" 
+              wx:key="_id"
+              bindtap="goToDetail"
+              data-id="{{item._id}}"
+              style="animation-delay: {{index * 100}}ms">
+          <view class="need-header">
+            <view class="need-type">
+              <text class="type-emoji">{{item.type === 'weather' ? '☀️' : item.type === 'traffic' ? '🚗' : item.type === 'shop' ? '🏪' : item.type === 'parking' ? '🅿️' : item.type === 'queue' ? '👥' : '📝'}}</text>
+              <text class="type-text">{{item.typeName}}</text>
+            </view>
+            <view class="need-status" style="background: {{item.statusColor}}15; color: {{item.statusColor}};">
+              <view class="status-dot" style="background: {{item.statusColor}};"></view>
+              <text>{{item.statusText}}</text>
+            </view>
+          </view>
+          
+          <view class="need-location">
+            <text class="location-icon">📍</text>
+            <text class="location-text">{{item.location.name}}</text>
+          </view>
+          
+          <view class="need-footer">
+            <view class="need-time">
+              <text class="time-icon">🕐</text>
+              <text>{{item.formattedTime}}</text>
+            </view>
+            <view class="need-points">
+              <text class="points-icon">💎</text>
+              <text class="points-value">{{item.points}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 加载更多 -->
+        <view class="load-more" wx:if="{{hasMore}}" bindtap="loadMoreNeeds">
+          <text>加载更多</text>
+        </view>
+        <view class="no-more" wx:if="{{!hasMore && needs.length > 5}}">
+          <text>没有更多了</text>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{!loading && needs.length === 0}}">
+        <view class="empty-icon">📝</view>
+        <text class="empty-title">还没有发布过需求</text>
+        <text class="empty-desc">点击上方按钮，快速发布您的第一个需求</text>
+        <button class="empty-btn" bindtap="goToPublish">立即发布</button>
+      </view>
+    </view>
+
+    <!-- 帮助提示 -->
+    <view class="help-section">
+      <view class="help-card">
+        <view class="help-icon">💡</view>
+        <view class="help-content">
+          <text class="help-title">发布小贴士</text>
+          <text class="help-text">描述越详细，匹配到的帮助者越精准</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

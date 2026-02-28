@@ -1,0 +1,46 @@
+/* components/navbar/navbar.wxss */
+.navbar-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  width: 80px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 5px;
+}
+
+.nav-icon {
+  font-size: 20px;
+  color: #ffffff;
+}
+
+.navbar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.navbar-right {
+  width: 80px;
+}

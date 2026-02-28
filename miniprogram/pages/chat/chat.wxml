@@ -1,0 +1,149 @@
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 顶部导航栏 -->
+  <view class="chat-header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">‹</text>
+    </view>
+    <view class="header-center">
+      <text class="chat-title">{{(needInfo && needInfo.typeName) || '聊天'}}</text>
+      <text class="chat-status" wx:if="{{needInfo}}">{{needInfo.statusName}}</text>
+    </view>
+    <view class="header-right" bindtap="showMore">
+      <text class="more-icon">⋯</text>
+    </view>
+  </view>
+  
+  <!-- 加载中 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">加载中...</text>
+  </view>
+  
+  <!-- 消息列表 -->
+  <scroll-view 
+    wx:if="{{!loading}}"
+    class="message-list"
+    scroll-y="true"
+    scroll-into-view="{{scrollToMessage}}"
+    scroll-with-animation="true"
+    bindscrolltoupper="loadMoreMessages"
+    enable-back-to-top="true"
+  >
+    <!-- 加载更多提示 -->
+    <view class="load-more" wx:if="{{hasMore}}">
+      <text class="load-text">加载更多</text>
+    </view>
+    
+    <!-- 消息项 -->
+    <block wx:for="{{messages}}" wx:key="_id">
+      <!-- 时间戳 -->
+      <view class="time-divider" wx:if="{{item.showTime}}">
+        <text class="time-text">{{item.formattedTime}}</text>
+      </view>
+      
+      <!-- 消息气泡 -->
+      <view class="message-item {{item.isMe ? 'message-me' : 'message-other'}}" id="{{item._id}}">
+        <!-- 对方头像 -->
+        <image 
+          wx:if="{{!item.isMe}}"
+          class="avatar"
+          src="{{(item.senderInfo && item.senderInfo.avatarUrl) || '/static/images/default-avatar.png'}}"
+          mode="aspectFill"
+        />
+        
+        <view class="message-content">
+          <!-- 昵称 -->
+          <text wx:if="{{!item.isMe && item.senderInfo}}" class="sender-name">
+            {{item.senderInfo.nickname || '匿名用户'}}
+          </text>
+          
+          <!-- 文字消息 -->
+          <view wx:if="{{item.type === 'text'}}" class="message-bubble text-bubble">
+            <text class="message-text">{{item.content}}</text>
+          </view>
+          
+          <!-- 图片消息 -->
+          <view 
+            wx:if="{{item.type === 'image'}}" 
+            class="message-bubble image-bubble"
+            bindtap="previewImage"
+            data-url="{{item.content}}"
+          >
+            <image 
+              class="message-image"
+              src="{{item.content}}"
+              mode="widthFix"
+              style="max-width: 400rpx;"
+              lazy-load="true"
+            />
+          </view>
+          
+          <!-- 系统消息 -->
+          <view wx:if="{{item.type === 'system'}}" class="system-message">
+            <text class="system-text">{{item.content}}</text>
+          </view>
+        </view>
+        
+        <!-- 自己头像 -->
+        <image 
+          wx:if="{{item.isMe}}"
+          class="avatar"
+          src="{{(userInfo && userInfo.avatarUrl) || '/static/images/default-avatar.png'}}"
+          mode="aspectFill"
+        />
+      </view>
+    </block>
+    
+    <!-- 底部留白 -->
+    <view class="list-footer"></view>
+  </scroll-view>
+  
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar" wx:if="{{!loading && needInfo}}">
+    <!-- 快捷操作 -->
+    <view class="quick-actions" wx:if="{{needInfo.status === 'executing'}}">
+      <button class="quick-btn complete-btn" bindtap="completeNeed">
+        <text class="btn-icon">✅</text>
+        <text>确认完成</text>
+      </button>
+      <button class="quick-btn support-btn" bindtap="support">
+        <text class="btn-icon">🎧</text>
+        <text>客服介入</text>
+      </button>
+    </view>
+    
+    <!-- 输入框区域 -->
+    <view class="input-area">
+      <view class="input-wrapper">
+        <input
+          class="message-input"
+          placeholder="请输入消息..."
+          placeholder-class="input-placeholder"
+          value="{{inputValue}}"
+          bindinput="inputMessage"
+          confirm-type="send"
+          bindconfirm="sendTextMessage"
+          adjust-position="true"
+          cursor-spacing="20"
+        />
+      </view>
+      <view class="input-actions">
+        <button class="action-btn image-btn" bindtap="sendImageMessage">
+          <text class="btn-icon">📷</text>
+        </button>
+        <button 
+          class="action-btn send-btn {{inputValue ? 'active' : ''}}"
+          bindtap="sendTextMessage"
+        >
+          <text class="btn-icon">➤</text>
+        </button>
+      </view>
+    </view>
+    
+    <!-- 安全提示 -->
+    <view class="safety-tip">
+      <text class="tip-icon">🛡️</text>
+      <text class="tip-text">请勿泄露个人隐私信息，遇到问题可申请客服介入</text>
+    </view>
+  </view>
+</view>

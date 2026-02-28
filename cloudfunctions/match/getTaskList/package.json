@@ -1,0 +1,9 @@
+{
+  "name": "match_getTaskList",
+  "version": "1.0.0",
+  "description": "获取任务列表",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

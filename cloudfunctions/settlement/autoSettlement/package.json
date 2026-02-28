@@ -1,0 +1,9 @@
+{
+  "name": "settlement_autoSettlement",
+  "version": "1.0.0",
+  "description": "自动结算定时触发器",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

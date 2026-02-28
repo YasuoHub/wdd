@@ -1,0 +1,9 @@
+{
+  "name": "points_checkSignIn",
+  "version": "1.0.0",
+  "description": "检查签到状态",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

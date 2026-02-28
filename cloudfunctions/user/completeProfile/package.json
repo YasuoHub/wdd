@@ -1,0 +1,9 @@
+{
+  "name": "user_completeProfile",
+  "version": "1.0.0",
+  "description": "完善用户信息",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

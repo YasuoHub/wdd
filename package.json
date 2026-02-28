@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@cloudbase/cli": "^2.12.3",
+    "tcb-admin-node": "^1.23.0"
+  }
+}

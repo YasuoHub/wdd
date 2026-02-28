@@ -1,0 +1,261 @@
+<!--miniprogram/pages/seeker/publish/publish.wxml-->
+<view class="container {{isLargeFont ? 'large-font' : ''}}">
+  <!-- 顶部标题区 -->
+  <view class="header-section">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <text class="header-title">发布需求</text>
+      <text class="header-subtitle">填写信息，快速获得帮助</text>
+    </view>
+  </view>
+
+  <!-- 步骤指示器 -->
+  <view class="steps-indicator">
+    <view class="step-item {{location.name ? 'completed' : 'active'}}">
+      <view class="step-number">1</view>
+      <text class="step-text">地点</text>
+    </view>
+    <view class="step-line {{selectedType ? 'completed' : ''}}"></view>
+    <view class="step-item {{selectedType ? 'completed' : ''}}">
+      <view class="step-number">2</view>
+      <text class="step-text">类型</text>
+    </view>
+    <view class="step-line {{description ? 'completed' : ''}}"></view>
+    <view class="step-item {{description ? 'completed' : ''}}">
+      <view class="step-number">3</view>
+      <text class="step-text">描述</text>
+    </view>
+    <view class="step-line {{points ? 'completed' : ''}}"></view>
+    <view class="step-item {{points ? 'completed' : ''}}">
+      <view class="step-number">4</view>
+      <text class="step-text">悬赏</text>
+    </view>
+  </view>
+
+  <!-- 表单内容 -->
+  <scroll-view class="form-scroll" scroll-y enhanced show-scrollbar="false">
+    <view class="form-content">
+      
+      <!-- 步骤1：选择地点 -->
+      <view class="form-section">
+        <view class="section-header">
+          <view class="section-number">1</view>
+          <text class="section-title">选择求助地点</text>
+          <text class="section-required">*</text>
+        </view>
+        
+        <view class="location-card {{location.name ? 'selected' : ''}}" bindtap="chooseLocation">
+          <view class="location-icon-wrap">
+            <text class="location-icon">📍</text>
+            <view class="location-pulse" wx:if="{{!location.name}}"></view>
+          </view>
+          <view class="location-info">
+            <block wx:if="{{location.name}}">
+              <text class="location-name">{{location.name}}</text>
+              <text class="location-address">{{location.address}}</text>
+            </block>
+            <block wx:else>
+              <text class="location-placeholder">点击选择地点</text>
+              <text class="location-hint">选择需要获取信息的位置</text>
+            </block>
+          </view>
+          <view class="location-arrow">
+            <text>{{location.name ? '✓' : '→'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 步骤2：选择类型 -->
+      <view class="form-section">
+        <view class="section-header">
+          <view class="section-number">2</view>
+          <text class="section-title">选择需求类型</text>
+          <text class="section-required">*</text>
+        </view>
+        
+        <view class="types-grid">
+          <view class="type-card {{selectedType === item.value ? 'selected' : ''}}" 
+                wx:for="{{needTypes}}" 
+                wx:key="value"
+                bindtap="selectType"
+                data-value="{{item.value}}"
+                data-name="{{item.name}}">
+            <view class="type-icon-bg">
+              <text class="type-icon">{{item.icon}}</text>
+            </view>
+            <text class="type-name">{{item.name}}</text>
+            <view class="type-check" wx:if="{{selectedType === item.value}}">
+              <text>✓</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 步骤3：问题描述 -->
+      <view class="form-section">
+        <view class="section-header">
+          <view class="section-number">3</view>
+          <text class="section-title">描述您的需求</text>
+          <text class="section-required">*</text>
+        </view>
+        
+        <view class="description-wrap">
+          <textarea 
+            class="description-input {{isLargeFont ? 'input-large' : ''}}"
+            placeholder="请详细描述您需要获取的信息，例如：
+• 具体想了解什么？
+• 有什么特殊要求？
+• 需要照片还是文字描述？"
+            placeholder-class="placeholder-style"
+            maxlength="500"
+            bindinput="inputDescription"
+            value="{{description}}"
+          />
+          <view class="description-counter">
+            <text class="counter-text {{descriptionLength > 450 ? 'warning' : ''}}">{{descriptionLength}}</text>
+            <text class="counter-total">/500</text>
+          </view>
+        </view>
+
+        <!-- 参考图片上传 -->
+        <view class="upload-section">
+          <text class="upload-label">参考图片（可选）</text>
+          <view class="upload-list">
+            <view class="upload-item" wx:for="{{referenceImages}}" wx:key="*this">
+              <image class="upload-image" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-url="{{item}}"/>
+              <view class="upload-delete" bindtap="deleteImage" data-index="{{index}}">
+                <text>×</text>
+              </view>
+            </view>
+            <view class="upload-add {{referenceImages.length >= 3 ? 'disabled' : ''}}" bindtap="chooseImage" wx:if="{{referenceImages.length < 3}}">
+              <text class="add-icon">+</text>
+              <text class="add-text">{{referenceImages.length}}/3</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 步骤4：设置悬赏 -->
+      <view class="form-section">
+        <view class="section-header">
+          <view class="section-number">4</view>
+          <text class="section-title">设置悬赏积分</text>
+          <text class="section-required">*</text>
+        </view>
+        
+        <view class="points-card">
+          <view class="points-display">
+            <view class="points-input-wrap">
+              <text class="points-icon">💎</text>
+              <input 
+                class="points-input {{isLargeFont ? 'input-large' : ''}}"
+                type="number"
+                placeholder="10"
+                value="{{points}}"
+                bindinput="inputPoints"
+              />
+              <text class="points-unit">积分</text>
+            </view>
+          </view>
+          
+          <view class="points-hint">
+            <text class="hint-text">最低 {{minPoints}} 积分</text>
+            <text class="hint-balance">可用 {{availablePoints}} 积分</text>
+          </view>
+
+          <!-- 快捷选择 -->
+          <view class="points-quick">
+            <view class="quick-item {{points === '10' ? 'selected' : ''}}" bindtap="quickPoints" data-value="10">10</view>
+            <view class="quick-item {{points === '20' ? 'selected' : ''}}" bindtap="quickPoints" data-value="20">20</view>
+            <view class="quick-item {{points === '50' ? 'selected' : ''}}" bindtap="quickPoints" data-value="50">50</view>
+            <view class="quick-item {{points === '100' ? 'selected' : ''}}" bindtap="quickPoints" data-value="100">100</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 高级设置 -->
+      <view class="form-section advanced">
+        <view class="section-header" bindtap="toggleAdvanced">
+          <text class="section-title-sub">高级设置</text>
+          <text class="section-arrow {{showAdvanced ? 'up' : ''}}">▼</text>
+        </view>
+        
+        <view class="advanced-content" wx:if="{{showAdvanced}}">
+          <!-- 时限选择 -->
+          <view class="option-group">
+            <text class="option-label">完成时限</text>
+            <view class="option-list">
+              <view class="option-item {{selectedTimeLimit === item.value ? 'selected' : ''}}" 
+                    wx:for="{{timeLimits}}" 
+                    wx:key="value"
+                    bindtap="selectTimeLimit"
+                    data-value="{{item.value}}">
+                <text>{{item.label}}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 匹配范围 -->
+          <view class="option-group">
+            <text class="option-label">匹配范围</text>
+            <view class="option-list">
+              <view class="option-item {{selectedMatchRange === item.value ? 'selected' : ''}}" 
+                    wx:for="{{matchRanges}}" 
+                    wx:key="value"
+                    bindtap="selectMatchRange"
+                    data-value="{{item.value}}">
+                <text>{{item.label}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 预览卡片 -->
+      <view class="preview-section" wx:if="{{location.name && selectedType && description}}">
+        <view class="preview-header">
+          <text class="preview-title">📋 需求预览</text>
+        </view>
+        <view class="preview-content">
+          <view class="preview-item">
+            <text class="preview-label">地点</text>
+            <text class="preview-value">{{location.name}}</text>
+          </view>
+          <view class="preview-item">
+            <text class="preview-label">类型</text>
+            <text class="preview-value">{{selectedTypeName}}</text>
+          </view>
+          <view class="preview-item">
+            <text class="preview-label">悬赏</text>
+            <text class="preview-value highlight">💎 {{points || minPoints}} 积分</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 底部占位 -->
+      <view class="bottom-spacer"></view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部悬浮按钮 -->
+  <view class="footer-bar">
+    <view class="footer-content">
+      <view class="cost-preview" wx:if="{{points}}">
+        <text class="cost-label">预计支付</text>
+        <text class="cost-value">💎 {{points}} 积分</text>
+      </view>
+      <view class="cost-placeholder" wx:else>
+        <text>填写完整信息后即可发布</text>
+      </view>
+      <button 
+        class="submit-btn {{!location.name || !selectedType || !description || !points ? 'disabled' : ''}} {{isLargeFont ? 'btn-large' : ''}}"
+        bindtap="submitNeed"
+        disabled="{{!location.name || !selectedType || !description || !points || loading}}"
+        loading="{{loading}}"
+      >
+        <text wx:if="{{!loading}}">立即发布</text>
+        <text wx:else>发布中...</text>
+      </button>
+    </view>
+  </view>
+</view>
