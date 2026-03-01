@@ -22,25 +22,27 @@ exports.main = async (event, context) => {
     const userData = user.data[0]
     const { skip, page: pageNum, pageSize: size } = utils.pagination({ page, pageSize })
 
-    let query = db.collection('needs').where({
-      status: status || 'matching'
-    })
-
-    if (type === 'nearby' && longitude && latitude) {
-      query = query.where({
-        location: {
-          geoNear: {
-            geometry: db.Geo.Point(longitude, latitude),
-            maxDistance: 10000,
-            minDistance: 0
-          }
-        }
-      })
+    // 构建查询条件
+    let whereCondition = {
+      status: status || 'matching',
+      seekerId: _.neq(userData._id)
     }
 
-    query = query.where({
-      seekerId: _.neq(userData._id)
-    })
+    // 附近查询使用 geoNear（需要 location 字段的 2dsphere 索引）
+    if (type === 'nearby' && longitude && latitude) {
+      try {
+        whereCondition.location = _.geoNear({
+          geometry: db.Geo.Point(longitude, latitude),
+          maxDistance: 10000,
+          minDistance: 0
+        })
+      } catch (geoErr) {
+        console.log('地理查询失败，可能是缺少索引:', geoErr)
+        // 降级为普通查询，查询最近发布的匹配中需求
+      }
+    }
+
+    let query = db.collection('needs').where(whereCondition)
 
     const totalRes = await query.count()
     const total = totalRes.total
@@ -62,8 +64,19 @@ exports.main = async (event, context) => {
         )
       }
 
+      // 组合 location 数据（兼容旧数据和新的分离结构）
+      const locationData = need.location || {}
+      const locationInfo = need.locationInfo || {}
+      const combinedLocation = {
+        ...locationData,
+        name: locationInfo.name || locationData.name || '未知位置',
+        address: locationInfo.address || locationData.address || ''
+      }
+
       return {
         ...need,
+        location: combinedLocation,
+        bounty: (need.points || 0) + (need.bonusPoints || 0), // 总悬赏积分
         distance: distance,
         formattedTime: utils.formatTime(need.createdAt)
       }

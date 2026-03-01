@@ -92,7 +92,6 @@ exports.main = async (event, context) => {
     await db.collection('users').doc(userData._id).update({
       data: {
         'points.balance': _.inc(points),
-        'points.totalEarned': _.inc(points),
         'pointsStats.signInStreak': newStreak,
         'pointsStats.lastSignIn': db.serverDate(),
         updatedAt: db.serverDate()

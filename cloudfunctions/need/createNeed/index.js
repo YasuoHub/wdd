@@ -16,11 +16,29 @@ exports.main = async (event, context) => {
     matchRange
   } = event
 
+  console.log('创建需求 - 接收到的完整event:', JSON.stringify(event))
+  console.log('创建需求 - 接收到的location:', JSON.stringify(location))
+  console.log('创建需求 - location各字段:', {
+    name: location && location.name,
+    address: location && location.address,
+    latitude: location && location.latitude,
+    longitude: location && location.longitude
+  })
+
   const db = cloud.database()
   const _ = db.command
   const wxContext = cloud.getWXContext()
 
+  // 用于存储需要在事务后使用的数据
+  let userData = null
+  let needNo = null
+  let needData = null
+  let newBalance = null
+  let newFrozen = null
+
   try {
+    // ========== 阶段1：所有前置校验（在事务外执行）==========
+
     // 获取用户信息
     const user = await db.collection('users').where({
       openid: wxContext.OPENID
@@ -30,7 +48,7 @@ exports.main = async (event, context) => {
       return response.error('用户不存在', 404)
     }
 
-    const userData = user.data[0]
+    userData = user.data[0]
 
     // 检查封禁状态
     if (userData.isBanned) {
@@ -84,16 +102,22 @@ exports.main = async (event, context) => {
     }
 
     // 生成需求编号
-    const needNo = utils.generateOrderNo('N')
+    needNo = utils.generateOrderNo('N')
 
-    // 创建需求
-    const needData = {
+    // 预先计算新的积分状态
+    newBalance = userData.points.balance - points
+    newFrozen = userData.points.frozen + points
+
+    // 创建需求数据
+    needData = {
       needNo: needNo,
       seekerId: userData._id,
       seekerOpenid: wxContext.OPENID,
       location: {
         type: 'Point',
-        coordinates: [location.longitude, location.latitude],
+        coordinates: [location.longitude, location.latitude]
+      },
+      locationInfo: {
         name: location.name,
         address: location.address
       },
@@ -131,73 +155,142 @@ exports.main = async (event, context) => {
       updatedAt: db.serverDate()
     }
 
-    // 使用事务确保数据一致性
-    const transaction = await db.startTransaction()
+    // ========== 阶段2：执行事务（仅包含核心写操作）==========
+    console.log('开始执行数据库事务...')
 
+    let needResult = null
+    let transactionSuccess = false
+    let needId = null
+
+    // 使用 runTransaction 自动处理事务生命周期
     try {
-      // 1. 冻结积分
-      await transaction.collection('users').doc(userData._id).update({
-        data: {
-          'points.frozen': _.inc(points),
-          'points.totalSpent': _.inc(points),
-          'seekerInfo.totalRequests': _.inc(1),
-          updatedAt: db.serverDate()
-        }
+      const transactionResult = await db.runTransaction(async (transaction) => {
+        // 1. 冻结积分：从 balance 扣除，加到 frozen（总额不变）
+        await transaction.collection('users').doc(userData._id).update({
+          data: {
+            'points.balance': _.inc(-points),
+            'points.frozen': _.inc(points),
+            'seekerInfo.totalRequests': _.inc(1),
+            updatedAt: db.serverDate()
+          }
+        })
+
+        // 2. 创建需求
+        needResult = await transaction.collection('needs').add({
+          data: needData
+        })
+
+        needId = needResult._id
+
+        // 3. 记录积分变动（冻结）
+        await transaction.collection('points_records').add({
+          data: {
+            userId: userData._id,
+            type: 'publish_freeze',
+            amount: -points,
+            balance: newBalance,
+            frozen: newFrozen,
+            relatedId: needResult._id,
+            relatedType: 'need',
+            description: `发布需求"${typeName}"冻结${points}积分`,
+            extra: {
+              needNo: needNo,
+              type: type
+            },
+            createdAt: db.serverDate()
+          }
+        })
+
+        return { needId: needResult._id }
       })
 
-      // 2. 创建需求
-      const needResult = await transaction.collection('needs').add({
-        data: needData
-      })
+      transactionSuccess = true
+      needId = transactionResult.needId
+      console.log('事务执行成功，needId:', needId)
 
-      // 3. 记录积分变动
-      await transaction.collection('points_records').add({
-        data: {
-          userId: userData._id,
-          type: 'publish_deduct',
-          amount: -points,
-          balance: userData.points.balance,
-          frozen: userData.points.frozen + points,
-          relatedId: needResult._id,
-          relatedType: 'need',
-          description: `发布需求"${typeName}"扣除${points}积分`,
-          extra: {
-            needNo: needNo,
-            type: type
-          },
-          createdAt: db.serverDate()
-        }
-      })
+    } catch (transactionError) {
+      console.error('事务执行失败:', transactionError)
 
-      await transaction.commit()
+      // 判断是否是事务不存在错误，如果是则尝试非事务方式补偿
+      if (transactionError.code === 'DATABASE_TRANSACTION_FAIL' ||
+          transactionError.message?.includes('TransactionNotExist')) {
+        console.log('事务不存在，尝试使用非事务方式执行...')
 
-      // 异步触发匹配（不阻塞响应）
-      setTimeout(async () => {
+        // 非事务方式执行（补偿机制）
         try {
-          await cloud.callFunction({
-            name: 'match_findHelpers',
-            data: { needId: needResult._id }
+          // 1. 冻结积分
+          await db.collection('users').doc(userData._id).update({
+            data: {
+              'points.balance': _.inc(-points),
+              'points.frozen': _.inc(points),
+              'seekerInfo.totalRequests': _.inc(1),
+              updatedAt: db.serverDate()
+            }
           })
-        } catch (err) {
-          console.error('触发匹配失败:', err)
+
+          // 2. 创建需求
+          needResult = await db.collection('needs').add({
+            data: needData
+          })
+
+          needId = needResult._id
+
+          // 3. 记录积分变动
+          await db.collection('points_records').add({
+            data: {
+              userId: userData._id,
+              type: 'publish_freeze',
+              amount: -points,
+              balance: newBalance,
+              frozen: newFrozen,
+              relatedId: needResult._id,
+              relatedType: 'need',
+              description: `发布需求"${typeName}"冻结${points}积分`,
+              extra: {
+                needNo: needNo,
+                type: type
+              },
+              createdAt: db.serverDate()
+            }
+          })
+
+          transactionSuccess = true
+          console.log('非事务方式执行成功，needId:', needId)
+        } catch (fallbackError) {
+          console.error('非事务方式执行失败:', fallbackError)
+          throw fallbackError
         }
-      }, 100)
-
-      return response.success({
-        needId: needResult._id,
-        needNo: needNo,
-        status: 'matching',
-        points: points,
-        message: '需求发布成功，正在匹配帮助者...'
-      }, '发布成功')
-
-    } catch (error) {
-      await transaction.rollback()
-      throw error
+      } else {
+        throw transactionError
+      }
     }
+
+    if (!transactionSuccess || !needId) {
+      return response.error('发布失败，请稍后重试', -1)
+    }
+
+    // ========== 阶段3：异步触发匹配（不阻塞响应）==========
+    setTimeout(async () => {
+      try {
+        await cloud.callFunction({
+          name: 'match_findHelpers',
+          data: { needId: needId }
+        })
+      } catch (err) {
+        console.error('触发匹配失败:', err)
+      }
+    }, 100)
+
+    return response.success({
+      needId: needId,
+      needNo: needNo,
+      status: 'matching',
+      points: points,
+      message: '需求发布成功，正在匹配帮助者...'
+    }, '发布成功')
 
   } catch (error) {
     console.error('发布需求失败:', error)
-    return response.error('发布失败', -1, error)
+    return response.error('发布失败：' + (error.message || '未知错误'), -1, error)
   }
 }

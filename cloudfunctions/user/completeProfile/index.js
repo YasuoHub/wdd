@@ -37,7 +37,6 @@ exports.main = async (event, context) => {
 
       // 更新积分
       updateData['points.balance'] = _.inc(bonusPoints)
-      updateData['points.totalEarned'] = _.inc(bonusPoints)
       updateData['pointsStats.hasCompletedProfile'] = true
 
       // 记录积分

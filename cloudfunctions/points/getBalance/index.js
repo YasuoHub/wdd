@@ -40,15 +40,13 @@ exports.main = async (event, context) => {
 
     // 安全获取积分数据（兼容旧数据）
     const points = userData.points || {}
-    const balance = points.balance || 0
-    const frozen = points.frozen || 0
+    const balance = points.balance || 0  // 当前余额（已扣除冻结部分）
+    const frozen = points.frozen || 0    // 冻结积分
 
     return response.success({
-      balance: balance,
-      frozen: frozen,
-      available: balance - frozen,
-      totalEarned: points.totalEarned || 0,
-      totalSpent: points.totalSpent || 0,
+      balance: balance,                  // 当前余额
+      frozen: frozen,                    // 冻结积分
+      available: balance,                // 可用积分 = 当前余额
       earnedInWeek: earnedInWeek,
       spentInWeek: spentInWeek,
       lastUpdated: userData.updatedAt

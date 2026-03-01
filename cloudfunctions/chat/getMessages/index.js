@@ -63,15 +63,11 @@ exports.main = async (event, context) => {
       .limit(pageSize)
       .get()
 
-    // 获取发送者信息
+    // 获取发送者信息（移除 .field()，使用完整查询）
     const userIds = [...new Set(result.data.map(m => m.senderId))]
     const users = await db.collection('users')
       .where({
         _id: _.in(userIds)
-      })
-      .field({
-        nickname: true,
-        avatar: true
       })
       .get()
 

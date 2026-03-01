@@ -2,19 +2,41 @@
  * 位置服务
  */
 
+const request = require('../utils/request')
+
 module.exports = {
   /**
-   * 获取当前位置
+   * 检查位置权限
    */
-  getCurrentLocation() {
-    return new Promise((resolve, reject) => {
-      wx.getLocation({
-        type: 'gcj02',
+  checkLocationAuth() {
+    return new Promise((resolve) => {
+      wx.getSetting({
         success: (res) => {
-          resolve({
-            latitude: res.latitude,
-            longitude: res.longitude
-          })
+          const authSetting = res.authSetting
+          if (authSetting['scope.userLocation'] === true) {
+            resolve('authorized')
+          } else if (authSetting['scope.userLocation'] === false) {
+            resolve('denied')
+          } else {
+            resolve('notDetermined')
+          }
+        },
+        fail: () => {
+          resolve('unknown')
+        }
+      })
+    })
+  },
+
+  /**
+   * 申请位置权限
+   */
+  requestLocationAuth() {
+    return new Promise((resolve, reject) => {
+      wx.authorize({
+        scope: 'scope.userLocation',
+        success: () => {
+          resolve()
         },
         fail: (err) => {
           reject(err)
@@ -24,42 +46,56 @@ module.exports = {
   },
 
   /**
-   * 根据坐标获取地址信息（使用腾讯地图）
+   * 获取当前位置（带权限检查）
    */
-  getAddressFromLocation(location) {
+  async getCurrentLocation() {
+    // 先检查权限状态
+    const authStatus = await this.checkLocationAuth()
+
+    if (authStatus === 'denied') {
+      // 用户之前拒绝过，需要引导去设置页面
+      throw { type: 'PERMISSION_DENIED', message: '需要位置权限，请前往设置开启' }
+    }
+
+    if (authStatus === 'notDetermined') {
+      // 还未申请权限，先申请
+      try {
+        await this.requestLocationAuth()
+      } catch (err) {
+        throw { type: 'PERMISSION_DENIED', message: '位置权限被拒绝' }
+      }
+    }
+
+    // 获取位置
     return new Promise((resolve, reject) => {
-      // 使用微信小程序内置的逆地址解析
-      wx.request({
-        url: 'https://apis.map.qq.com/ws/geocoder/v1/',
-        data: {
-          location: `${location.latitude},${location.longitude}`,
-          key: 'LTXBZ-6QBEW-T7CRL-YCDUQ-WHXFK-GSFRJ',
-          get_poi: 0
-        },
+      wx.getLocation({
+        type: 'gcj02',
+        isHighAccuracy: true,
+        highAccuracyExpireTime: 5000,
         success: (res) => {
-          if (res.data.status === 0) {
-            const result = res.data.result
-            resolve({
-              name: result.formatted_addresses.recommend || result.address,
-              address: result.address,
-              province: result.address_component.province,
-              city: result.address_component.city,
-              district: result.address_component.district
-            })
-          } else {
-            resolve({
-              name: '未知位置',
-              address: ''
-            })
-          }
-        },
-        fail: () => {
           resolve({
-            name: '位置获取失败',
-            address: ''
+            latitude: res.latitude,
+            longitude: res.longitude
           })
+        },
+        fail: (err) => {
+          if (err.errCode === 2) {
+            reject({ type: 'TIMEOUT', message: '获取位置超时，请重试' })
+          } else {
+            reject({ type: 'ERROR', message: '获取位置失败', error: err })
+          }
         }
       })
     })
+  },
+
+  /**
+   * 根据坐标获取地址信息（调用云函数）
+   */
+  getAddressFromLocation(location) {
+    return request.callFunction('common_getAddressFromLocation', {
+      latitude: location.latitude,
+      longitude: location.longitude
+    }).then(res => res.data)
   }
 }

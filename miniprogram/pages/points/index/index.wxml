@@ -13,9 +13,6 @@
     <view class="card-content">
       <view class="points-header">
         <text class="points-label">我的积分</text>
-        <view class="total-badge">
-          <text class="badge-text">累计 {{totalEarned}}</text>
-        </view>
       </view>
       
       <view class="points-display">

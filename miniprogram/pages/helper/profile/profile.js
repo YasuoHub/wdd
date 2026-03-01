@@ -201,11 +201,8 @@ Page({
       
       await userService.completeProfile({
         role: 'helper',
-        helperInfo: {
-          helpTypes: form.helpTypes,
-          locations: form.locations,
-          isAvailable: true
-        }
+        helpTypes: form.helpTypes,
+        locations: form.locations
       })
       
       wx.hideLoading()

@@ -73,7 +73,7 @@ Page({
     if (options.type) {
       this.setData({
         selectedType: options.type,
-        selectedTypeName: options.name
+        selectedTypeName: options.typeName || options.name
       })
     }
   },
@@ -104,6 +104,7 @@ Page({
   async chooseLocation() {
     try {
       const location = await locationUtil.chooseLocation()
+      console.log('选择位置:', JSON.stringify(location))
       this.setData({ location })
     } catch (error) {
       if (error.errMsg !== 'chooseLocation:fail cancel') {
@@ -264,6 +265,9 @@ Page({
       timeLimit: selectedTimeLimit,
       matchRange: selectedMatchRange
     }
+
+    console.log('提交需求 - location:', JSON.stringify(location))
+    console.log('提交需求 - needData:', JSON.stringify(needData))
 
     try {
       this.setData({ loading: true })

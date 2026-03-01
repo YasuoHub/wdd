@@ -53,8 +53,7 @@ exports.main = async (event, context) => {
     try {
       await session.collection('needs').doc(needId).update({
         data: {
-          extraPoints: _.inc(points),
-          totalBounty: _.inc(points),
+          bonusPoints: _.inc(points),
           updatedAt: db.serverDate()
         }
       })
@@ -63,20 +62,23 @@ exports.main = async (event, context) => {
         data: {
           'points.balance': _.inc(-points),
           'points.frozen': _.inc(points),
-          'points.totalSpent': _.inc(points),
           updatedAt: db.serverDate()
         }
       })
 
+      // 记录积分变动（追加冻结）
+      const newBalance = userData.points.balance - points
+      const newFrozen = userData.points.frozen + points
       await session.collection('points_records').add({
         data: {
           userId: userData._id,
-          type: 'append_need',
+          type: 'append_freeze',
           amount: -points,
-          balance: userData.points.balance - points,
+          balance: newBalance,
+          frozen: newFrozen,
           relatedId: needId,
           relatedType: 'need',
-          description: '追加悬赏积分',
+          description: '追加悬赏冻结积分',
           createdAt: db.serverDate()
         }
       })
@@ -85,7 +87,7 @@ exports.main = async (event, context) => {
 
       return response.success({
         appendedPoints: points,
-        totalBounty: needData.totalBounty + points
+        totalPoints: (needData.points || 0) + (needData.bonusPoints || 0) + points
       }, '追加成功')
 
     } catch (err) {

@@ -8,25 +8,27 @@ Page({
   data: {
     userInfo: null,
     isLargeFont: false,
-    
+
     // 需求列表
     needList: [],
     loading: true,
     hasMore: true,
     page: 1,
     pageSize: 10,
-    
+
     // 筛选
     currentTab: 'nearby', // nearby:附近, all:全部
     tabs: [
       { key: 'nearby', name: '附近需求', icon: '📍' },
       { key: 'all', name: '全部需求', icon: '🌐' }
     ],
-    
+
     // 位置
     currentLocation: null,
     locationName: '定位中...',
-    
+    hasLocation: false, // 是否已获取位置
+    locationError: null, // 位置错误信息
+
     // 任务统计
     taskStats: {
       ongoing: 0,
@@ -46,8 +48,22 @@ Page({
   },
 
   onShow() {
+    // 如果有位置则刷新列表
     if (this.data.currentLocation) {
       this.refreshList()
+    }
+    // 如果没有位置且之前拒绝了权限，检查权限状态
+    else if (this.data.locationError === 'PERMISSION_DENIED') {
+      this.checkLocationPermission()
+    }
+  },
+
+  // 检查位置权限状态
+  async checkLocationPermission() {
+    const authStatus = await locationService.checkLocationAuth()
+    if (authStatus === 'authorized') {
+      // 用户已授权，重新获取位置
+      this.getLocation()
     }
   },
 
@@ -66,24 +82,69 @@ Page({
   // 获取当前位置
   async getLocation() {
     try {
+      this.setData({
+        loading: true,
+        locationError: null
+      })
+
       const location = await locationService.getCurrentLocation()
       const address = await locationService.getAddressFromLocation(location)
 
       this.setData({
         currentLocation: location,
-        locationName: address && address.name || '当前位置'
+        locationName: address && address.name || '当前位置',
+        hasLocation: true,
+        locationError: null
       })
 
       // 更新用户位置到服务器
       this.updateUserLocation(location)
 
+      // 获取到位置后才加载需求列表
       this.loadNeedList()
     } catch (error) {
+      console.error('获取位置失败:', error)
+
+      if (error.type === 'PERMISSION_DENIED') {
+        this.setData({
+          hasLocation: false,
+          locationError: 'PERMISSION_DENIED',
+          locationName: '需要位置权限',
+          loading: false,
+          needList: []
+        })
+
+        // 权限被拒绝，引导用户去设置
+        const res = await wx.showModal({
+          title: '需要位置权限',
+          content: '获取附近任务需要您的位置信息，是否前往设置开启？',
+          confirmText: '去开启',
+          cancelText: '手动选择'
+        })
+
+        if (res.confirm) {
+          // 打开设置页面
+          wx.openSetting({
+            success: (settingRes) => {
+              if (settingRes.authSetting['scope.userLocation']) {
+                // 用户开启了权限，重新获取位置
+                this.getLocation()
+              }
+            }
+          })
+          return
+        }
+        return
+      }
+
+      // 其他错误（如超时）
       this.setData({
-        locationName: '位置获取失败',
-        loading: false
+        hasLocation: false,
+        locationError: error.type || 'ERROR',
+        locationName: '点击选择位置',
+        loading: false,
+        needList: []
       })
-      wx.showToast({ title: '请允许位置权限', icon: 'none' })
     }
   },
 
@@ -106,8 +167,16 @@ Page({
 
   // 加载需求列表
   async loadNeedList() {
-    if (!this.data.currentLocation) return
-    
+    // 没有位置时不加载数据
+    if (!this.data.currentLocation) {
+      this.setData({
+        loading: false,
+        needList: [],
+        hasMore: false
+      })
+      return
+    }
+
     try {
       this.setData({ loading: true })
       
@@ -138,7 +207,7 @@ Page({
     } catch (error) {
       console.error('加载需求列表失败:', error)
       this.setData({ loading: false })
-      wx.showToast({ title: '加载失败', icon: 'none' })
+      wx.showToast({ title: '加载失败，请重试', icon: 'none' })
     }
   },
 
@@ -181,9 +250,15 @@ Page({
             longitude: res.longitude,
             latitude: res.latitude
           },
-          locationName: res.name || res.address
+          locationName: res.name || res.address,
+          hasLocation: true,
+          locationError: null
         })
         this.refreshList()
+      },
+      fail: (err) => {
+        console.log('选择位置失败:', err)
+        // 用户取消选择时不做任何处理
       }
     })
   },

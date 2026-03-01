@@ -54,9 +54,7 @@ exports.main = async (event, context) => {
         isPhoneVerified: false,
         points: {
           balance: CONFIG.points.NEW_USER,
-          frozen: 0,
-          totalEarned: CONFIG.points.NEW_USER,
-          totalSpent: 0
+          frozen: 0
         },
         helperInfo: {
           locations: [],
@@ -250,7 +248,6 @@ async function handleInvite(db, newUserId, inviterId, newUserNickname) {
     await db.collection('users').doc(inviterId).update({
       data: {
         'points.balance': _.inc(CONFIG.points.INVITE),
-        'points.totalEarned': _.inc(CONFIG.points.INVITE),
         'pointsStats.inviteCount': _.inc(1),
         'pointsStats.monthlyInviteCount': monthlyInviteCount + 1,
         'pointsStats.lastInviteMonth': currentMonth,
@@ -278,7 +275,6 @@ async function handleInvite(db, newUserId, inviterId, newUserNickname) {
     await db.collection('users').doc(newUserId).update({
       data: {
         'points.balance': _.inc(CONFIG.points.INVITE),
-        'points.totalEarned': _.inc(CONFIG.points.INVITE),
         updatedAt: db.serverDate()
       }
     })

@@ -178,12 +178,15 @@ exports.main = async (event, context) => {
 // 发送匹配通知
 async function sendMatchNotification(openid, needData, distance) {
   try {
+    // 获取位置名称（兼容新旧数据结构）
+    const locationName = needData.locationInfo?.name || needData.location?.name || '未知位置'
+
     await cloud.openapi.subscribeMessage.send({
       touser: openid,
       templateId: CONFIG.templates.match,
       data: {
         thing1: { value: needData.typeName },
-        thing2: { value: needData.location.name },
+        thing2: { value: locationName },
         amount3: { value: needData.points + '积分' },
         thing4: { value: `距离${Math.round(distance * 1000)}米，点击查看详情` }
       }

@@ -47,7 +47,7 @@
 
         <view class="need-location">
           <text class="location-icon">📍</text>
-          <text class="location-name">{{item.location.name}}</text>
+          <text class="location-name">{{item.location && item.location.name || '未知位置'}}</text>
         </view>
 
         <view class="need-footer">

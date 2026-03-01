@@ -66,7 +66,11 @@ Page({
       this.setData({ loading: true })
       const result = await needService.getNeedDetail(this.data.needId)
       const needInfo = result.data
-      
+
+      // 调试输出
+      console.log('需求详情 - location:', JSON.stringify(needInfo.location))
+      console.log('需求详情 - location.name:', needInfo.location && needInfo.location.name)
+
       // 格式化时间
       needInfo.formattedTime = util.formatDate(needInfo.createdAt)
       if (needInfo.deadline) {

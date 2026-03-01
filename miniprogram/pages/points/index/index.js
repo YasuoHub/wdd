@@ -5,10 +5,9 @@ const app = getApp()
 
 Page({
   data: {
-    balance: 0,
-    frozen: 0,
-    available: 0,
-    totalEarned: 0,
+    balance: 0,         // 当前余额
+    frozen: 0,          // 冻结积分
+    available: 0,       // 可用积分
     displayBalance: 0,  // 用于动画显示的积分
     todaySignIn: false,
     signInStreak: 0,
@@ -76,17 +75,15 @@ Page({
       const balance = data.balance || 0
       const frozen = data.frozen || 0
       const available = data.available || 0
-      const totalEarned = data.totalEarned || 0
 
-      console.log('积分数据:', { balance, frozen, available, totalEarned })
+      console.log('积分数据:', { balance, frozen, available })
 
       // 先设置实际数值
       this.setData({
         balance: balance,
         frozen: frozen,
         available: available,
-        totalEarned: totalEarned,
-        displayBalance: balance, // 直接设置，动画作为增强
+        displayBalance: balance, // 显示余额用于动画
         loading: false
       })
 
@@ -104,11 +101,13 @@ Page({
       // 尝试从本地缓存获取
       const userInfo = wx.getStorageSync('userInfo')
       if (userInfo && userInfo.points) {
+        const balance = userInfo.points.balance || 0
+        const frozen = userInfo.points.frozen || 0
         this.setData({
-          balance: userInfo.points.balance || 0,
-          frozen: userInfo.points.frozen || 0,
-          available: (userInfo.points.balance || 0) - (userInfo.points.frozen || 0),
-          displayBalance: userInfo.points.balance || 0
+          balance: balance,
+          frozen: frozen,
+          available: balance,
+          displayBalance: balance
         })
       }
     }
@@ -220,7 +219,7 @@ Page({
         todaySignIn: true,
         signInStreak: streak,
         balance: balance,
-        available: balance - this.data.frozen,
+        available: balance,
         todayReward: points,
         monthlyDays: this.data.monthlyDays + 1
       })

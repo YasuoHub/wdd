@@ -75,7 +75,7 @@
           <text class="bounty-label">悬赏积分</text>
           <view class="bounty-value">
             <text class="bounty-icon">💎</text>
-            <text class="bounty-number">{{needInfo.bounty || 0}}</text>
+            <text class="bounty-number">{{needInfo.bounty}}</text>
           </view>
         </view>
         <view class="divider"></view>

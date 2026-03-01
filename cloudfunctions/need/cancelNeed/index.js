@@ -52,21 +52,28 @@ exports.main = async (event, context) => {
         }
       })
 
-      const returnPoints = needData.bounty + needData.extraPoints
+      const totalPoints = needData.points + (needData.bonusPoints || 0)
+      // 取消需求：解冻积分，从 frozen 转回 balance
+      // 发布时: balance -10, frozen +10
+      // 取消时: balance +10, frozen -10 (总额不变)
       await session.collection('users').doc(userData._id).update({
         data: {
-          'points.balance': _.inc(returnPoints),
-          'points.frozen': _.inc(-needData.bounty),
+          'points.balance': _.inc(totalPoints),
+          'points.frozen': _.inc(-totalPoints),
           updatedAt: db.serverDate()
         }
       })
 
+      // 记录积分变动（取消解冻：frozen 转回 balance）
+      const newBalance = userData.points.balance + totalPoints
+      const newFrozen = userData.points.frozen - totalPoints
       await session.collection('points_records').add({
         data: {
           userId: userData._id,
-          type: 'refund',
-          amount: returnPoints,
-          balance: userData.points.balance + returnPoints,
+          type: 'cancel_refund',
+          amount: totalPoints,
+          balance: newBalance,
+          frozen: newFrozen,
           relatedId: needId,
           relatedType: 'need',
           description: '取消需求返还积分',
@@ -77,7 +84,7 @@ exports.main = async (event, context) => {
       await session.commit()
 
       return response.success({
-        returnedPoints: returnPoints
+        returnedPoints: totalPoints
       }, '取消成功')
 
     } catch (err) {

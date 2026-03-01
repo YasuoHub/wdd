@@ -66,12 +66,33 @@ Page({
   async loadUserInfo() {
     try {
       const result = await userService.getUserInfo()
+      const userInfo = result.data
+
+      // 获取真实统计数据
+      const statsResult = await userService.getUserStats()
+      const stats = statsResult.data || {}
+
+      // 合并统计数据
+      const updatedUserInfo = {
+        ...userInfo,
+        needCount: stats.needCount || 0,        // 发布需求数量
+        helpCount: stats.completedTasks || 0,   // 帮助次数（已完成任务）
+        seekerInfo: {
+          ...userInfo.seekerInfo,
+          totalRequests: stats.needCount || 0
+        },
+        helperInfo: {
+          ...userInfo.helperInfo,
+          completedTasks: stats.completedTasks || 0
+        }
+      }
+
       this.setData({
-        userInfo: result.data,
-        isLargeFont: result.data.settings?.largeFont || false
+        userInfo: updatedUserInfo,
+        isLargeFont: updatedUserInfo.settings?.largeFont || false
       })
-      app.globalData.userInfo = result.data
-      wx.setStorageSync('userInfo', result.data)
+      app.globalData.userInfo = updatedUserInfo
+      wx.setStorageSync('userInfo', updatedUserInfo)
     } catch (error) {
       console.error('加载用户信息失败:', error)
     }

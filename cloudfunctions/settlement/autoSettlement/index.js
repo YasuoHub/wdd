@@ -48,34 +48,47 @@ exports.main = async (event, context) => {
 async function settleNeed(db, need) {
   const _ = db.command
 
+  // 计算总悬赏积分（初始 + 追加）
+  const totalPoints = (need.points || 0) + (need.bonusPoints || 0)
+
+  // 获取帮助者当前积分
+  const helper = await db.collection('users').doc(need.helperId).get()
+  const helperData = helper.data
+  const helperCurrentBalance = helperData.points?.balance || 0
+  const helperCurrentFrozen = helperData.points?.frozen || 0
+
   const transaction = await db.startTransaction()
 
   try {
-    // 1. 解冻求助者积分
+    // 1. 解冻求助者积分（解冻总悬赏积分）
     await transaction.collection('users').doc(need.seekerId).update({
       data: {
-        'points.frozen': _.inc(-need.points),
+        'points.frozen': _.inc(-totalPoints),
         'seekerInfo.completedRequests': _.inc(1),
         updatedAt: db.serverDate()
       }
     })
 
-    // 2. 帮助者获得积分
+    // 2. 帮助者获得积分（获得总悬赏积分）
     await transaction.collection('users').doc(need.helperId).update({
       data: {
-        'points.balance': _.inc(need.points),
-        'points.totalEarned': _.inc(need.points),
+        'points.balance': _.inc(totalPoints),
         'helperInfo.completedTasks': _.inc(1),
         updatedAt: db.serverDate()
       }
     })
+
+    // 计算帮助者新余额
+    const newHelperBalance = helperCurrentBalance + totalPoints
 
     // 3. 记录积分变动
     await transaction.collection('points_records').add({
       data: {
         userId: need.helperId,
         type: 'task_reward',
-        amount: need.points,
+        amount: totalPoints,
+        balance: newHelperBalance,
+        frozen: helperCurrentFrozen,
         relatedId: need._id,
         relatedType: 'need',
         description: '自动结算任务奖励',
@@ -107,7 +120,7 @@ async function settleNeed(db, need) {
         templateId: CONFIG.templates.points,
         data: {
           thing1: { value: '任务自动结算' },
-          amount2: { value: need.points + '积分' },
+          amount2: { value: totalPoints + '积分' },
           time3: { value: new Date().toLocaleString() }
         }
       })

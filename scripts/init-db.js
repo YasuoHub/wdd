@@ -27,6 +27,8 @@ const collections = [
     indexes: [
       { name: 'seeker_status_idx', key: { seekerId: 1, status: 1 } },
       { name: 'helper_status_idx', key: { helperId: 1, status: 1 } },
+      { name: 'seekerOpenid_idx', key: { seekerOpenid: 1 } },
+      { name: 'helperOpenid_idx', key: { helperOpenid: 1 } },
       { name: 'location_2dsphere', key: { location: '2dsphere' } },
       { name: 'status_created_idx', key: { status: 1, createdAt: -1 } },
       { name: 'needNo_idx', key: { needNo: 1 }, unique: true },

@@ -58,11 +58,22 @@
     <!-- 加载中 -->
     <view class="loading-container" wx:if="{{loading && needList.length === 0}}">
       <view class="loading-spinner"></view>
-      <text class="loading-text">加载需求中...</text>
+      <text class="loading-text">{{hasLocation ? '加载需求中...' : '获取位置中...'}}</text>
     </view>
-    
-    <!-- 空状态 -->
-    <view class="empty-state" wx:if="{{!loading && needList.length === 0}}">
+
+    <!-- 没有位置权限的空状态 -->
+    <view class="empty-state" wx:if="{{!loading && !hasLocation}}">
+      <view class="empty-icon">📍</view>
+      <text class="empty-title">需要位置权限</text>
+      <text class="empty-desc">开启位置权限后可查看附近的需求</text>
+      <view class="empty-action">
+        <button class="action-btn" bindtap="getLocation">获取位置</button>
+        <button class="action-btn secondary" bindtap="chooseLocation">手动选择</button>
+      </view>
+    </view>
+
+    <!-- 有位置但没有需求的空状态 -->
+    <view class="empty-state" wx:if="{{!loading && hasLocation && needList.length === 0}}">
       <view class="empty-icon">🔍</view>
       <text class="empty-title">暂无附近需求</text>
       <text class="empty-desc">换个位置或稍后再来看看</text>
@@ -106,7 +117,7 @@
           <view class="footer-right">
             <view class="bounty-box">
               <text class="bounty-icon">💎</text>
-              <text class="bounty-num">{{item.bounty || 0}}</text>
+              <text class="bounty-num">{{item.bounty}}</text>
             </view>
             <button 
               class="accept-btn"

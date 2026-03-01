@@ -29,6 +29,9 @@ exports.main = async (event, context) => {
 
     const needData = need.data
 
+    // 计算总积分（初始悬赏 + 追加悬赏）
+    const totalPoints = (needData.points || 0) + (needData.bonusPoints || 0)
+
     // 检查权限
     if (needData.seekerId !== userData._id) {
       return response.error('无权操作', 403)
@@ -39,13 +42,19 @@ exports.main = async (event, context) => {
       return response.error('任务不在执行中状态', 1001)
     }
 
-    // 计算奖励积分
-    let totalReward = needData.points
+    // 获取帮助者当前积分（用于计算新余额）
+    const helper = await db.collection('users').doc(needData.helperId).get()
+    const helperData = helper.data
+    const helperCurrentBalance = helperData.points?.balance || 0
+    const helperCurrentFrozen = helperData.points?.frozen || 0
+
+    // 计算奖励积分（基于总悬赏）
+    let totalReward = totalPoints
     let bonusPoints = 0
 
     // 好评额外5%奖励
     if (rating >= 4) {
-      bonusPoints = Math.ceil(needData.points * CONFIG.points.BONUS_RATE)
+      bonusPoints = Math.ceil(totalPoints * CONFIG.points.BONUS_RATE)
       totalReward += bonusPoints
     }
 
@@ -53,10 +62,10 @@ exports.main = async (event, context) => {
     const transaction = await db.startTransaction()
 
     try {
-      // 1. 解冻求助者积分
+      // 1. 解冻求助者积分（解冻总悬赏积分）
       await transaction.collection('users').doc(needData.seekerId).update({
         data: {
-          'points.frozen': _.inc(-needData.points),
+          'points.frozen': _.inc(-totalPoints),
           'seekerInfo.completedRequests': _.inc(1),
           updatedAt: db.serverDate()
         }
@@ -66,7 +75,6 @@ exports.main = async (event, context) => {
       await transaction.collection('users').doc(needData.helperId).update({
         data: {
           'points.balance': _.inc(totalReward),
-          'points.totalEarned': _.inc(totalReward),
           'helperInfo.completedTasks': _.inc(1),
           'helperInfo.rating': db.command.set(
             db.command.divide([
@@ -81,13 +89,17 @@ exports.main = async (event, context) => {
         }
       })
 
+      // 计算帮助者新余额
+      const newHelperBalance = helperCurrentBalance + totalReward
+
       // 3. 记录积分变动 - 任务奖励
       await transaction.collection('points_records').add({
         data: {
           userId: needData.helperId,
           type: 'task_reward',
-          amount: needData.points,
-          balance: 0, // 需要查询后更新
+          amount: totalPoints,
+          balance: newHelperBalance - bonusPoints, // 扣除好评奖励前的余额
+          frozen: helperCurrentFrozen,
           relatedId: needId,
           relatedType: 'need',
           description: `完成任务-${needData.typeName}`,
@@ -102,7 +114,8 @@ exports.main = async (event, context) => {
             userId: needData.helperId,
             type: 'task_bonus',
             amount: bonusPoints,
-            balance: 0,
+            balance: newHelperBalance,
+            frozen: helperCurrentFrozen,
             relatedId: needId,
             relatedType: 'need',
             description: '好评额外奖励',

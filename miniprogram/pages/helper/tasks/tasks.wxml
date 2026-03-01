@@ -87,7 +87,7 @@
           <view class="footer-right">
             <view class="bounty-box">
               <text class="bounty-icon">💎</text>
-              <text class="bounty-num">{{item.points || 0}}</text>
+              <text class="bounty-num">{{item.bounty}}</text>
             </view>
           </view>
         </view>

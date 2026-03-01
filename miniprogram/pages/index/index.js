@@ -31,16 +31,43 @@ Page({
     try {
       const userInfo = wx.getStorageSync('userInfo')
       if (userInfo) {
+        // 获取真实统计数据
+        const stats = await this.loadUserStats()
+
+        // 合并统计数据到用户信息
+        const updatedUserInfo = {
+          ...userInfo,
+          seekerInfo: {
+            ...userInfo.seekerInfo,
+            totalRequests: stats.needCount || 0
+          },
+          helperInfo: {
+            ...userInfo.helperInfo,
+            completedTasks: stats.completedTasks || 0
+          }
+        }
+
         this.setData({
-          userInfo: userInfo,
+          userInfo: updatedUserInfo,
           hasUserInfo: true,
           isLargeFont: userInfo.settings?.largeFont || false
         })
-        app.globalData.userInfo = userInfo
+        app.globalData.userInfo = updatedUserInfo
         app.globalData.isLargeFont = userInfo.settings?.largeFont || false
       }
     } catch (error) {
       console.error('检查登录失败:', error)
+    }
+  },
+
+  // 加载用户统计数据
+  async loadUserStats() {
+    try {
+      const result = await userService.getUserStats()
+      return result.data || {}
+    } catch (error) {
+      console.error('加载用户统计失败:', error)
+      return {}
     }
   },
 

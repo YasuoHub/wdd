@@ -52,5 +52,12 @@ module.exports = {
       longitude: location.longitude,
       latitude: location.latitude
     })
+  },
+
+  /**
+   * 获取用户统计数据（发布需求数、完成任务数等）
+   */
+  getUserStats() {
+    return request.callFunction('user_getUserStats')
   }
 }
