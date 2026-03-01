@@ -25,23 +25,21 @@ exports.main = async (event, context) => {
       return response.error('无权查看', 403)
     }
 
-    // 获取求助者信息
-    const seeker = await db.collection('users').doc(needData.seekerId).field({
-      nickname: true,
-      avatar: true,
-      'seekerInfo.completedRequests': true
-    }).get()
+    // 获取求助者信息（使用 where 查询代替 doc+field，兼容性更好）
+    const seekerResult = await db.collection('users')
+      .where({ _id: needData.seekerId })
+      .limit(1)
+      .get()
+    const seeker = seekerResult.data && seekerResult.data.length > 0 ? seekerResult.data[0] : null
 
     // 获取帮助者信息（如果有）
     let helper = null
     if (needData.helperId) {
-      const helperData = await db.collection('users').doc(needData.helperId).field({
-        nickname: true,
-        avatar: true,
-        'helperInfo.rating': true,
-        'helperInfo.completedTasks': true
-      }).get()
-      helper = helperData.data
+      const helperResult = await db.collection('users')
+        .where({ _id: needData.helperId })
+        .limit(1)
+        .get()
+      helper = helperResult.data && helperResult.data.length > 0 ? helperResult.data[0] : null
     }
 
     // 获取匹配信息
@@ -64,9 +62,42 @@ exports.main = async (event, context) => {
       needId: needId
     }).count()
 
+    // 状态名称映射
+    const statusNameMap = {
+      'matching': '待匹配',
+      'executing': '进行中',
+      'completed': '已完成',
+      'cancelled': '已取消'
+    }
+
+    // 计算总悬赏积分（初始悬赏 + 追加悬赏）
+    // 注意：即使需求取消，也保持原始悬赏金额显示，不改变points/bonusPoints字段
+    const totalBounty = (needData.points || 0) + (needData.bonusPoints || 0)
+
+    console.log('需求详情 - needId:', needId, 'status:', needData.status)
+    console.log('location数据:', JSON.stringify(needData.location))
+
+    // 组合 location 数据（兼容旧数据和新的分离结构）
+    const locationData = needData.location || {}
+    const locationInfo = needData.locationInfo || {}
+    const combinedLocation = {
+      ...locationData,
+      name: locationInfo.name || locationData.name || '未知位置',
+      address: locationInfo.address || locationData.address || ''
+    }
+
     return response.success({
       ...needData,
-      seekerInfo: seeker.data,
+      location: combinedLocation,
+      statusName: statusNameMap[needData.status] || '未知状态',
+      bounty: totalBounty, // 总悬赏积分（兼容前端显示，保持原始值不变）
+      originalPoints: needData.points, // 保留原始字段供调试
+      originalBonusPoints: needData.bonusPoints,
+      seekerInfo: seeker ? {
+        nickname: seeker.nickname,
+        avatar: seeker.avatar,
+        seekerInfo: seeker.seekerInfo
+      } : null,
       helperInfo: helper,
       matchInfo: matchInfo,
       messageCount: messageCount.total,
